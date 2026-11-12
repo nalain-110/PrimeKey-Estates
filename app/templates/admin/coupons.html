@@ -1,0 +1,33 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Coupons{% endblock %}
+{% block content %}
+<div class="">
+  <h2 class="mb-3">Coupons</h2>
+  <form method="POST" action="{{ url_for('admin.add_coupon') }}" class="row g-2 mb-4">{% if csrf_token is defined %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+    <div class="col-md-3"><input name="code" class="form-control" placeholder="Code" required></div>
+    <div class="col-md-2"><input type="number" step="any" name="discount_pct" class="form-control" placeholder="Discount %" value="10"></div>
+    <div class="col-md-2"><input type="number" name="max_uses" class="form-control" placeholder="Max uses" value="100"></div>
+    <div class="col-md-3"><input type="date" name="valid_until" class="form-control"></div>
+    <div class="col-md-2"><button class="btn btn-primary w-100">Create coupon</button></div>
+  </form>
+  {% if coupons %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Code</th><th>Discount</th><th>Max uses</th><th>Valid until</th></tr></thead>
+      <tbody>
+        {% for c in coupons %}
+        <tr>
+          <td>{{ c.code }}</td>
+          <td>{{ c.discount_pct }}%</td>
+          <td>{{ c.max_uses }}</td>
+          <td>{{ c.valid_until.strftime('%d %b %Y') if c.valid_until else 'No expiry' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-center text-muted py-5"><p class="fs-5 mb-1">No coupons yet</p></div>
+  {% endif %}
+</div>
+{% endblock %}

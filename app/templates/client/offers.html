@@ -1,0 +1,33 @@
+{% extends 'client/base_client.html' %}
+{% block title %}My Offers{% endblock %}
+{% block content %}
+<div class="">
+  <h2 class="mb-3">My offers</h2>
+  {% if ofs %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Property</th><th>Listed price</th><th>Your offer</th><th>Counter</th><th>Status</th><th>Date</th></tr>
+      </thead>
+      <tbody>
+        {% for o in ofs %}
+        <tr>
+          <td>{{ o.property.title if o.property else '—' }}</td>
+          <td>{% if o.property %}PKR {{ '{:,.0f}'.format(o.property.price) }}{% else %}—{% endif %}</td>
+          <td>PKR {{ '{:,.0f}'.format(o.offered_price) }}</td>
+          <td>{% if o.counter_price %}PKR {{ '{:,.0f}'.format(o.counter_price) }}{% else %}—{% endif %}</td>
+          <td><span class="badge badge-{{ 'success' if o.status == 'Accepted' else ('danger' if o.status == 'Rejected' else ('info' if o.status == 'Countered' else 'warning')) }}">{{ o.status }}</span></td>
+          <td>{{ o.created_at.strftime('%d %b %Y') if o.created_at else '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-center text-muted py-5">
+    <p class="fs-5 mb-1">No offers yet</p>
+    <p class="mb-0">Open a property and make an offer to the agent.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

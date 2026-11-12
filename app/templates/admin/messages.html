@@ -1,0 +1,24 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Contact Messages{% endblock %}
+{% block content %}
+<div class="">
+  <h2 class="mb-3">Contact messages</h2>
+  {% if msgs %}
+  {% for m in msgs %}
+  <div class="card card-body mb-3">
+    <div class="d-flex justify-content-between">
+      <strong>{{ m.name }}</strong>
+      <small class="text-muted">{{ m.created_at.strftime('%d %b %Y, %I:%M %p') if m.created_at else '' }}</small>
+    </div>
+    <div class="small text-muted mb-2">
+      {{ m.email if m.email is defined else '' }}{% if m.phone is defined and m.phone %} · {{ m.phone }}{% endif %}
+    </div>
+    {% if m.subject is defined and m.subject %}<div class="fw-semibold">{{ m.subject }}</div>{% endif %}
+    <p class="mb-0">{{ m.message }}</p>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="text-center text-muted py-5"><p class="fs-5 mb-1">No messages yet</p></div>
+  {% endif %}
+</div>
+{% endblock %}

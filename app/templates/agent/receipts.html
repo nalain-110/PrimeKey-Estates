@@ -1,0 +1,35 @@
+{% extends 'agent/base_agent.html' %}
+{% block title %}Token Receipts{% endblock %}
+{% block content %}
+<div class="">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Token receipts</h2>
+    <a href="{{ url_for('agent.deals') }}" class="btn btn-outline">Go to deals</a>
+  </div>
+  {% if receipts %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Receipt no.</th><th>Property</th><th>Amount</th><th>Date</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        {% for r in receipts %}
+        <tr>
+          <td>{{ r.receipt_no }}</td>
+          <td>{{ r.deal.property.title if r.deal and r.deal.property else '—' }}</td>
+          <td>PKR {{ '{:,.0f}'.format(r.amount) }}</td>
+          <td>{{ r.receipt_date.strftime('%d %b %Y') if r.receipt_date else '—' }}</td>
+          <td>{{ r.notes or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-center text-muted py-5">
+    <p class="fs-5 mb-1">No token receipts yet</p>
+    <p class="mb-0">Open a deal and choose "Issue receipt" to create one.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

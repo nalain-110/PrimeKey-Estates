@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% block title %}Browse Properties — PrimeKey Estates{% endblock %}
+{% block meta_desc %}Search houses, plots, flats and commercial properties for sale and rent across Pakistan.{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+  <div class="container">
+    <h1>Browse Properties</h1>
+    <div class="breadcrumb">
+      <a href="{{ url_for('public.index') }}">Home</a>
+      <i class="fa-solid fa-chevron-right" style="font-size:0.65rem;"></i>
+      <span>Properties</span>
+    </div>
+  </div>
+</div>
+
+<div class="container py-32">
+  <div class="d-flex gap-24" style="align-items:flex-start;">
+
+    <!-- ── Sidebar Filters ─────────────────────────── -->
+    <aside class="filter-sidebar">
+      <div class="filter-panel">
+        <div class="filter-header">
+          <span><i class="fa-solid fa-sliders"></i> Filter Properties</span>
+          <a href="{{ url_for('public.properties') }}" class="btn btn-ghost btn-sm">Reset</a>
+        </div>
+        <form method="GET" action="{{ url_for('public.properties') }}" id="filterForm">
+          <div class="filter-group">
+            <label class="filter-label">Keyword</label>
+            <input type="text" name="keyword" class="form-control" placeholder="Area, city, name..." value="{{ filters.get('keyword','') }}">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Property Type</label>
+            <select name="type_id" class="form-select">
+              <option value="">All Types</option>
+              {% for t in prop_types %}
+              <option value="{{ t.id }}" {% if filters.get('type_id')|string == t.id|string %}selected{% endif %}>{{ t.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">City</label>
+            <select name="city_id" class="form-select">
+              <option value="">All Cities</option>
+              {% for c in cities %}
+              <option value="{{ c.id }}" {% if filters.get('city_id')|string == c.id|string %}selected{% endif %}>{{ c.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Listing Type</label>
+            <div class="radio-group">
+              <label class="radio-label"><input type="radio" name="listing_type" value="" {% if not filters.get('listing_type') %}checked{% endif %}> All</label>
+              <label class="radio-label"><input type="radio" name="listing_type" value="Sale" {% if filters.get('listing_type')=='Sale' %}checked{% endif %}> For Sale</label>
+              <label class="radio-label"><input type="radio" name="listing_type" value="Rent" {% if filters.get('listing_type')=='Rent' %}checked{% endif %}> For Rent</label>
+            </div>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Bedrooms</label>
+            <select name="bedrooms" class="form-select">
+              <option value="">Any</option>
+              {% for b in [1,2,3,4,5,6] %}
+              <option value="{{ b }}" {% if filters.get('bedrooms')|string == b|string %}selected{% endif %}>{{ b }}+</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Min Price (PKR)</label>
+            <input type="number" name="min_price" class="form-control" placeholder="0" value="{{ filters.get('min_price','') }}" step="100000">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Max Price (PKR)</label>
+            <input type="number" name="max_price" class="form-control" placeholder="No limit" value="{{ filters.get('max_price','') }}" step="100000">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">
+            <i class="fa-solid fa-magnifying-glass"></i> Apply Filters
+          </button>
+        </form>
+      </div>
+
+      <!-- Price Guide -->
+      <div class="filter-panel mt-20">
+        <div class="filter-header"><span><i class="fa-solid fa-chart-line"></i> Price Guide (Avg)</span></div>
+        <div class="price-guide">
+          <div class="price-row"><span>Houses</span><strong>1–5 Cr</strong></div>
+          <div class="price-row"><span>Plots</span><strong>20–80 Lac</strong></div>
+          <div class="price-row"><span>Flats</span><strong>50 Lac–2 Cr</strong></div>
+          <div class="price-row"><span>Shops</span><strong>30 Lac–3 Cr</strong></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── Results ──────────────────────────────────── -->
+    <main style="flex:1;min-width:0;">
+      <div class="results-header d-flex justify-between align-center mb-20" style="flex-wrap:wrap;gap:12px;">
+        <div>
+          <span class="results-count">{{ props.total }} Properties Found</span>
+          {% if filters.get('keyword') or filters.get('city_id') or filters.get('type_id') %}
+            <span style="font-size:0.82rem;color:var(--text-muted);margin-left:8px;">for your search</span>
+          {% endif %}
+        </div>
+        <div class="d-flex gap-8 align-center">
+          <span class="text-muted" style="font-size:0.85rem;">Sort:</span>
+          <select name="sort" class="form-select" style="width:160px;font-size:0.85rem;" onchange="appendSort(this.value)">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="price_asc">Price: Low to High</option>
+            <option value="price_desc">Price: High to Low</option>
+          </select>
+        </div>
+      </div>
+
+      {% if props.items %}
+      <div class="prop-grid">
+        {% for prop in props.items %}
+        <div class="prop-card animate-fade-up">
+          <div class="prop-img-wrap">
+            {% if prop.images %}
+              <img src="{{ url_for('static', filename='images/uploads/' + prop.images[0].image_url) }}" alt="{{ prop.title }}" loading="lazy">
+            {% else %}
+              <div class="prop-img-placeholder" style="background:linear-gradient(135deg,#0d1b2a,#b8912e);display:flex;align-items:center;justify-content:center;height:100%;"><i class="fa-solid fa-building" style="font-size:3rem;color:rgba(255,255,255,0.3)"></i></div>
+            {% endif %}
+            <div class="prop-badges">
+              {% if prop.is_featured %}<span class="badge badge-gold">⭐ Featured</span>{% endif %}
+              {% if prop.is_verified %}<span class="badge badge-success">✓ Verified</span>{% endif %}
+              <span class="badge {% if prop.listing_type == 'Sale' %}badge-info{% else %}badge-warning{% endif %}">{{ prop.listing_type }}</span>
+            </div>
+            <div class="prop-overlay">
+              {% if session.get('user_id') %}
+              <form action="{{ url_for('client.toggle_favorite', prop_id=prop.id) }}" method="POST" style="display:inline;">
+                {{ csrf_token() }}
+                <button class="prop-action-btn" title="Save to favorites"><i class="fa-solid fa-heart"></i></button>
+              </form>
+              {% else %}
+              <a href="{{ url_for('auth.login') }}" class="prop-action-btn" title="Login to save"><i class="fa-solid fa-heart"></i></a>
+              {% endif %}
+              <a href="{{ url_for('public.property_detail', prop_id=prop.id) }}" class="prop-action-btn" title="View details"><i class="fa-solid fa-eye"></i></a>
+            </div>
+          </div>
+          <div class="prop-body">
+            <div class="prop-price">
+              PKR {% if prop.price >= 10000000 %}{{ '%.1f'|format(prop.price/10000000) }} Cr{% elif prop.price >= 100000 %}{{ '%.1f'|format(prop.price/100000) }} Lac{% else %}{{ '{:,.0f}'.format(prop.price) }}{% endif %}
+              {% if prop.listing_type == 'Rent' %}<span class="prop-price-unit">/month</span>{% endif %}
+            </div>
+            <h3 class="prop-title">
+              <a href="{{ url_for('public.property_detail', prop_id=prop.id) }}">{{ prop.title }}</a>
+            </h3>
+            <div class="prop-location"><i class="fa-solid fa-location-dot"></i> {{ prop.location.area.name if prop.location.area else '' }}{% if prop.area and prop.city %}, {% endif %}{{ prop.location.city.name if prop.location.city else '' }}</div>
+            <div class="prop-features">
+              {% if prop.bedrooms %}<span><i class="fa-solid fa-bed"></i> {{ prop.bedrooms }}</span>{% endif %}
+              {% if prop.bathrooms %}<span><i class="fa-solid fa-bath"></i> {{ prop.bathrooms }}</span>{% endif %}
+              {% if prop.size %}<span><i class="fa-solid fa-vector-square"></i> {{ prop.size }} {{ prop.size_unit }}</span>{% endif %}
+              {% if prop.floors %}<span><i class="fa-solid fa-layer-group"></i> {{ prop.floors }} Floor{{ 's' if prop.floors > 1 }}</span>{% endif %}
+            </div>
+          </div>
+          <div class="prop-footer">
+            <div class="prop-agent">
+              <div class="prop-agent-avatar">{{ prop.agent.user.name[0].upper() if prop.agent else 'A' }}</div>
+              <span>{{ prop.agent.user.name if prop.agent else 'Agent' }}</span>
+            </div>
+            <span class="prop-date">{{ prop.created_at.strftime('%d %b %Y') }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Pagination -->
+      {% if props.pages > 1 %}
+      <div class="pagination">
+        {% if props.has_prev %}
+          <a href="{{ url_for('public.properties', page=props.prev_num, **filters) }}" class="page-btn"><i class="fa-solid fa-chevron-left"></i> Prev</a>
+        {% endif %}
+        {% for p in props.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+          {% if p %}
+            <a href="{{ url_for('public.properties', page=p, **filters) }}" class="page-btn {% if p == props.page %}active{% endif %}">{{ p }}</a>
+          {% else %}
+            <span class="page-ellipsis">…</span>
+          {% endif %}
+        {% endfor %}
+        {% if props.has_next %}
+          <a href="{{ url_for('public.properties', page=props.next_num, **filters) }}" class="page-btn">Next <i class="fa-solid fa-chevron-right"></i></a>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% else %}
+      <div class="empty-state">
+        <i class="fa-solid fa-building"></i>
+        <h3>No Properties Found</h3>
+        <p>Try adjusting your filters or search with different keywords.</p>
+        <a href="{{ url_for('public.properties') }}" class="btn btn-primary mt-16">Clear Filters</a>
+      </div>
+      {% endif %}
+    </main>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function appendSort(val) {
+  const url = new URL(window.location.href);
+  url.searchParams.set('sort', val);
+  window.location = url.toString();
+}
+</script>
+{% endblock %}

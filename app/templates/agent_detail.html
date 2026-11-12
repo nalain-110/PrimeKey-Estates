@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% block title %}{{ agent.user.name }} — Agent Profile | PrimeKey Estates{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h1>Agent Profile</h1>
+    <div class="breadcrumb">
+      <a href="{{ url_for('public.index') }}">Home</a>
+      <i class="fa-solid fa-chevron-right" style="font-size:0.65rem;"></i>
+      <a href="{{ url_for('public.agents_list') }}">Agents</a>
+      <i class="fa-solid fa-chevron-right" style="font-size:0.65rem;"></i>
+      <span>{{ agent.user.name }}</span>
+    </div>
+  </div>
+</div>
+
+<div class="container py-40">
+  <div class="d-flex gap-28" style="align-items:flex-start;flex-wrap:wrap;">
+
+    <!-- Left: Agent Card -->
+    <div style="width:300px;flex-shrink:0;">
+      <div class="card mb-20">
+        <div class="card-body" style="text-align:center;padding:32px 24px;">
+          <div class="agent-avatar" style="width:90px;height:90px;font-size:2.4rem;margin:0 auto 16px;">
+            {{ agent.user.name[0].upper() }}
+          </div>
+          <h2 style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;color:var(--text-primary);margin-bottom:4px;">
+            {{ agent.user.name }}
+          </h2>
+          <p style="font-size:0.875rem;color:var(--text-muted);margin-bottom:12px;">
+            {{ agent.agency_name or 'PrimeKey Estates' }}
+          </p>
+
+          <!-- Rating -->
+          <div class="agent-rating justify-center mb-16">
+            {% set r = agent.rating|float %}
+            {% for i in range(5) %}
+              <i class="fa-{{ 'solid' if i < r|int else 'regular' }} fa-star" style="color:var(--gold);font-size:1rem;"></i>
+            {% endfor %}
+            <span style="color:var(--text-muted);font-size:0.85rem;margin-left:6px;">{{ '%.1f'|format(r) }}/5</span>
+          </div>
+
+          <!-- Stats -->
+          <div class="d-flex justify-center gap-20 mb-20 pb-20" style="border-bottom:1px solid var(--border-subtle);">
+            <div style="text-align:center;">
+              <div style="font-size:1.4rem;font-weight:800;color:var(--gold);">{{ agent.total_deals or 0 }}</div>
+              <div style="font-size:0.72rem;color:var(--text-muted);">Deals</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:1.4rem;font-weight:800;color:var(--gold);">{{ agent.experience_years or 0 }}+</div>
+              <div style="font-size:0.72rem;color:var(--text-muted);">Yrs Exp.</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:1.4rem;font-weight:800;color:var(--gold);">{{ properties|length }}</div>
+              <div style="font-size:0.72rem;color:var(--text-muted);">Listings</div>
+            </div>
+          </div>
+
+          <!-- Contact -->
+          <div class="d-flex flex-col gap-10">
+            {% if agent.user.phone %}
+            <a href="tel:{{ agent.user.phone }}" class="btn btn-primary btn-block">
+              <i class="fa-solid fa-phone"></i> {{ agent.user.phone }}
+            </a>
+            {% endif %}
+            <a href="mailto:{{ agent.user.email }}" class="btn btn-outline btn-block">
+              <i class="fa-solid fa-envelope"></i> Send Email
+            </a>
+            <a href="https://wa.me/{{ agent.user.phone|replace('+','') }}" target="_blank" class="btn btn-ghost btn-block">
+              <i class="fab fa-whatsapp" style="color:#25d366;"></i> WhatsApp
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- License & Info -->
+      <div class="card">
+        <div class="card-header">
+          <span style="font-weight:700;font-size:0.875rem;color:var(--text-primary);">
+            <i class="fa-solid fa-id-badge" style="color:var(--gold);"></i> Agent Info
+          </span>
+        </div>
+        <div class="card-body">
+          <div class="d-flex flex-col gap-12">
+            {% if agent.license_no %}
+            <div>
+              <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:3px;">License No.</div>
+              <div style="font-size:0.875rem;font-weight:600;color:var(--text-primary);">{{ agent.license_no }}</div>
+            </div>
+            {% endif %}
+            <div>
+              <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:3px;">Agency</div>
+              <div style="font-size:0.875rem;font-weight:600;color:var(--text-primary);">{{ agent.agency_name or '—' }}</div>
+            </div>
+            <div>
+              <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:3px;">Experience</div>
+              <div style="font-size:0.875rem;font-weight:600;color:var(--text-primary);">{{ agent.experience_years or 0 }} Years</div>
+            </div>
+            <div>
+              <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:3px;">Member Since</div>
+              <div style="font-size:0.875rem;font-weight:600;color:var(--text-primary);">{{ agent.user.created_at.strftime('%B %Y') if agent.user.created_at else '—' }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Listings + Bio -->
+    <div style="flex:1;min-width:0;">
+
+      <!-- Bio -->
+      {% if agent.bio %}
+      <div class="card mb-24">
+        <div class="card-header">
+          <span style="font-weight:700;font-size:0.875rem;color:var(--text-primary);">
+            <i class="fa-solid fa-user" style="color:var(--gold);"></i> About {{ agent.user.name }}
+          </span>
+        </div>
+        <div class="card-body">
+          <p style="color:var(--text-secondary);line-height:1.8;font-size:0.9rem;">{{ agent.bio }}</p>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Active Listings -->
+      <div class="d-flex align-center justify-between mb-16">
+        <h3 style="font-family:'Playfair Display',serif;font-weight:700;color:var(--text-primary);">Active Listings</h3>
+        <span class="badge badge-gold">{{ properties|length }} Properties</span>
+      </div>
+
+      {% if properties %}
+      <div class="prop-grid">
+        {% for prop in properties %}
+        <div class="prop-card">
+          <div class="prop-img-wrap">
+            {% if prop.images %}
+            <img src="{{ url_for('static', filename='images/uploads/' + prop.images[0].image_url) }}" alt="{{ prop.title }}">
+            {% else %}
+            <div class="prop-img-placeholder" style="background:linear-gradient(135deg,#0d1b2a,#b8912e);height:100%;display:flex;align-items:center;justify-content:center;">
+              <i class="fa-solid fa-building" style="font-size:2.5rem;color:rgba(201,168,76,0.4);"></i>
+            </div>
+            {% endif %}
+            <div class="prop-badges">
+              <span class="badge {{ 'badge-success' if prop.listing_type == 'Sale' else 'badge-info' }}">{{ prop.listing_type }}</span>
+              {% if prop.is_featured %}<span class="badge badge-gold"><i class="fa-solid fa-star"></i> Featured</span>{% endif %}
+            </div>
+          </div>
+          <div class="prop-body">
+            <div class="prop-price">
+              {% if prop.price >= 10000000 %}{{ '%.1f'|format(prop.price/10000000) }} Cr
+              {% elif prop.price >= 100000 %}{{ '%.1f'|format(prop.price/100000) }} Lac
+              {% else %}{{ '{:,.0f}'.format(prop.price) }}{% endif %}
+              PKR
+              {% if prop.listing_type == 'Rent' %}<span class="prop-price-unit">/month</span>{% endif %}
+            </div>
+            <div class="prop-title"><a href="{{ url_for('public.property_detail', prop_id=prop.id) }}">{{ prop.title }}</a></div>
+            <div class="prop-location">
+              <i class="fa-solid fa-location-dot"></i>
+              {{ prop.location.area.name if prop.location and prop.location.area else '' }}
+              {{ ', ' + prop.location.city.name if prop.location and prop.location.city else '' }}
+            </div>
+            <div class="prop-features">
+              {% if prop.bedrooms %}<span><i class="fa-solid fa-bed"></i> {{ prop.bedrooms }} Beds</span>{% endif %}
+              {% if prop.bathrooms %}<span><i class="fa-solid fa-bath"></i> {{ prop.bathrooms }} Baths</span>{% endif %}
+              {% if prop.size %}<span><i class="fa-solid fa-ruler-combined"></i> {{ prop.size }} {{ prop.size_unit }}</span>{% endif %}
+            </div>
+          </div>
+          <div class="prop-footer">
+            <a href="{{ url_for('public.property_detail', prop_id=prop.id) }}" class="btn btn-primary btn-sm">View Details</a>
+            <span class="prop-date">{{ prop.created_at.strftime('%d %b %Y') if prop.created_at else '' }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="fa-solid fa-building"></i>
+        <h3>No active listings</h3>
+        <p>This agent has no available properties at the moment.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

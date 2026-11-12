@@ -1,0 +1,36 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Property Types{% endblock %}
+{% block content %}
+<div class="">
+  <h2 class="mb-4">Property types, amenities and features</h2>
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <h5>Property types</h5>
+      <form method="POST" action="{{ url_for('admin.add_property_type') }}" class="mb-3">{% if csrf_token is defined %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+        <div class="input-group">
+          <input name="name" class="form-control" placeholder="Type name" required>
+          <input name="icon" class="form-control" placeholder="Icon class">
+          <button class="btn btn-primary">Add</button>
+        </div>
+      </form>
+      {% if types %}
+      <ul class="list-group">
+        {% for t in types %}<li class="list-group-item">{% if t.icon %}<i class="{{ t.icon }} me-2"></i>{% endif %}{{ t.name }}</li>{% endfor %}
+      </ul>
+      {% else %}<p class="text-muted">No property types yet.</p>{% endif %}
+    </div>
+    <div class="col-lg-4">
+      <h5>Amenities</h5>
+      {% if amenities %}
+      <ul class="list-group">{% for a in amenities %}<li class="list-group-item">{{ a.name }}</li>{% endfor %}</ul>
+      {% else %}<p class="text-muted">No amenities yet.</p>{% endif %}
+    </div>
+    <div class="col-lg-4">
+      <h5>Features</h5>
+      {% if features %}
+      <ul class="list-group">{% for f in features %}<li class="list-group-item">{{ f.name if f.name is defined else f.id }}</li>{% endfor %}</ul>
+      {% else %}<p class="text-muted">No features yet.</p>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

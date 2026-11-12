@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Client Dashboard — PrimeKey Estates{% endblock %}</title>
+  <meta name="description" content="Manage your property searches, favorites, inquiries and deals.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+{% with messages = get_flashed_messages(with_categories=True) %}
+  {% if messages %}
+    <div style="position:fixed;top:20px;right:24px;z-index:9999;min-width:320px;max-width:420px;">
+      {% for category, message in messages %}
+        <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category in ['danger','error'] else category }}">
+          <i class="fa-solid fa-circle-{{ 'check' if category=='success' else 'exclamation' if category in ['danger','error'] else 'info' }}"></i>
+          {{ message }}
+          <button class="alert-close" type="button">✕</button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<div class="dash-layout">
+  <!-- ── Sidebar ───────────────────────────────────────── -->
+  <aside class="dash-sidebar">
+    <div class="dash-sidebar-header">
+      <div class="dash-logo">PrimeKey</div>
+      <div class="dash-user">
+        <div class="dash-avatar">{{ session.get('user_name','U')[0].upper() }}</div>
+        <div>
+          <div class="dash-user-name">{{ session.get('user_name','User') }}</div>
+          <div class="dash-user-role" style="color:var(--gold);font-size:0.72rem;font-weight:700;">CLIENT</div>
+        </div>
+      </div>
+    </div>
+    <nav class="dash-nav">
+      <div class="dash-nav-section">
+        <div class="dash-nav-label">Main Menu</div>
+        <a class="dash-nav-item {% if request.endpoint == 'client.dashboard' %}active{% endif %}" href="{{ url_for('client.dashboard') }}">
+          <i class="fa-solid fa-gauge"></i> Dashboard
+        </a>
+        <a class="dash-nav-item {% if request.endpoint == 'client.favorites' %}active{% endif %}" href="{{ url_for('client.favorites') }}">
+          <i class="fa-solid fa-heart"></i> Favorites
+        </a>
+        <a class="dash-nav-item {% if 'inquiry' in request.endpoint %}active{% endif %}" href="{{ url_for('client.inquiries') }}">
+          <i class="fa-solid fa-message"></i> Inquiries
+        </a>
+        <a class="dash-nav-item {% if 'offer' in request.endpoint %}active{% endif %}" href="{{ url_for('client.offers') }}">
+          <i class="fa-solid fa-tag"></i> My Offers
+        </a>
+        <a class="dash-nav-item {% if 'deal' in request.endpoint %}active{% endif %}" href="{{ url_for('client.deals') }}">
+          <i class="fa-solid fa-handshake"></i> My Deals
+        </a>
+        <a class="dash-nav-item {% if 'visit' in request.endpoint %}active{% endif %}" href="{{ url_for('client.visits') }}">
+          <i class="fa-solid fa-calendar-check"></i> Site Visits
+        </a>
+        <a class="dash-nav-item {% if 'notification' in request.endpoint %}active{% endif %}" href="{{ url_for('client.notifications') }}">
+          <i class="fa-solid fa-bell"></i> Notifications
+        </a>
+      </div>
+      <div class="dash-nav-section">
+        <div class="dash-nav-label">Explore</div>
+        <a class="dash-nav-item" href="{{ url_for('public.properties') }}"><i class="fa-solid fa-magnifying-glass"></i> Browse Properties</a>
+        <a class="dash-nav-item" href="{{ url_for('auth.profile') }}"><i class="fa-solid fa-user"></i> My Profile</a>
+        <a class="dash-nav-item" href="{{ url_for('auth.logout') }}" style="color:var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- ── Main Content ──────────────────────────────────── -->
+  <main class="dash-main" style="margin-top:0;min-height:100vh;">
+    {% block content %}{% endblock %}
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

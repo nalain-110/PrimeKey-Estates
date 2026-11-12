@@ -1,0 +1,169 @@
+{% extends 'agent/base_agent.html' %}
+{% block title %}Edit: {{ prop.title }} — PrimeKey Estates{% endblock %}
+
+{% block content %}
+<div class="dash-header">
+  <h1 class="dash-title">Edit: {{ prop.title }}</h1>
+  <p class="dash-subtitle">Update the details of your property listing below.</p>
+</div>
+
+<div class="card" style="max-width:900px;">
+  <div class="card-body" style="padding:36px;">
+    <form method="POST" enctype="multipart/form-data"
+          action="{{ url_for('agent.edit_listing', prop_id=prop.id) }}">
+      {{ csrf_token() }}
+
+      <!-- Basic Info -->
+      <div class="form-section-title">Basic Information</div>
+      <div class="grid grid-2 gap-16 mb-16">
+        <div class="form-group col-span-2">
+          <label class="form-label">Property Title *</label>
+          {{ form.title(class='form-control', placeholder='e.g. 10 Marla House in DHA Phase 5') }}
+          {% if form.title.errors %}<div class="error-msg">{{ form.title.errors[0] }}</div>{% endif %}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Property Type *</label>
+          {{ form.property_type_id(class='form-select') }}
+          {% if form.property_type_id.errors %}<div class="error-msg">{{ form.property_type_id.errors[0] }}</div>{% endif %}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Listing Type *</label>
+          {{ form.listing_type(class='form-select') }}
+          {% if form.listing_type.errors %}<div class="error-msg">{{ form.listing_type.errors[0] }}</div>{% endif %}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Price (PKR) *</label>
+          {{ form.price(class='form-control', placeholder='e.g. 15000000') }}
+          {% if form.price.errors %}<div class="error-msg">{{ form.price.errors[0] }}</div>{% endif %}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          {{ form.status(class='form-select') }}
+        </div>
+      </div>
+
+      <!-- Location -->
+      <div class="form-section-title mt-24">Location</div>
+      <div class="grid grid-2 gap-16 mb-16">
+        <div class="form-group">
+          <label class="form-label">City *</label>
+          {{ form.city_id(class='form-select') }}
+          {% if form.city_id.errors %}<div class="error-msg">{{ form.city_id.errors[0] }}</div>{% endif %}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Area / Sector</label>
+          {{ form.area_id(class='form-select') }}
+        </div>
+        <div class="form-group col-span-2">
+          <label class="form-label">Full Address</label>
+          {{ form.address(class='form-control', placeholder='e.g. House 14, Street 7, DHA Phase 5') }}
+        </div>
+      </div>
+
+      <!-- Specs -->
+      <div class="form-section-title mt-24">Property Specifications</div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;" class="mb-16">
+        <div class="form-group">
+          <label class="form-label">Size *</label>
+          {{ form.area_size(class='form-control', placeholder='e.g. 10') }}
+          {% if form.area_size.errors %}<div class="error-msg">{{ form.area_size.errors[0] }}</div>{% endif %}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Size Unit</label>
+          {{ form.area_unit(class='form-select') }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bedrooms</label>
+          {{ form.bedrooms(class='form-select') }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bathrooms</label>
+          {{ form.bathrooms(class='form-select') }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Floors</label>
+          {{ form.floors(class='form-control', placeholder='e.g. 2') }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Year Built</label>
+          {{ form.year_built(class='form-control', placeholder='e.g. 2020') }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Parking</label>
+          {{ form.parking_spaces(class='form-control', placeholder='e.g. 2') }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Furnishing</label>
+          {{ form.furnishing(class='form-select') }}
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="form-section-title mt-24">Description</div>
+      <div class="form-group mb-16">
+        {{ form.description(class='form-control', rows=5, placeholder='Describe the property in detail...') }}
+      </div>
+
+      <!-- Images -->
+      <div class="form-section-title mt-24">Property Images</div>
+      {% if prop.images %}
+      <div class="d-flex flex-wrap gap-10 mb-16">
+        {% for img in prop.images %}
+        <div style="position:relative;">
+          <img src="{{ url_for('static', filename='images/uploads/' + img.image_url) }}"
+               style="width:100px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--border);">
+          <form action="{{ url_for('agent.delete_image', img_id=img.id) }}" method="POST"
+                style="position:absolute;top:-8px;right:-8px;">
+            {{ csrf_token() }}
+            <button type="submit" class="btn" data-confirm="Remove this image?"
+                    style="width:22px;height:22px;border-radius:50%;background:var(--danger);color:#fff;font-size:0.65rem;padding:0;line-height:22px;text-align:center;">✕</button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <div class="file-upload-area mb-16" id="imageUploadArea" style="cursor:pointer;">
+        <i class="fa-solid fa-cloud-arrow-up" style="font-size:2.5rem;color:var(--gold);margin-bottom:12px;"></i>
+        <div style="font-weight:600;color:var(--text-primary);">Drop images here or click to upload</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-top:6px;">JPG, PNG, WEBP — max 5MB each. Multiple allowed.</div>
+        {{ form.images(class='form-control', id='imageInput', multiple=True, accept='image/*', style='display:none;') }}
+      </div>
+      <div id="imagePreview" class="d-flex flex-wrap gap-10 mt-10"></div>
+
+      <!-- Options -->
+      <div class="form-section-title mt-24">Options</div>
+      <div class="d-flex gap-24 mb-24 flex-wrap">
+        <label class="checkbox-label">
+          <input type="checkbox" name="is_featured" {% if prop.is_featured %}checked{% endif %}> Mark as Featured
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" name="is_negotiable" {% if prop.is_negotiable %}checked{% endif %}> Price is Negotiable
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" name="allow_installments" {% if prop.allow_installments %}checked{% endif %}> Allow Installments
+        </label>
+      </div>
+
+      <div class="d-flex gap-12">
+        <button type="submit" class="btn btn-primary btn-lg">
+          <i class="fa-solid fa-floppy-disk"></i> Update Listing
+        </button>
+        <a href="{{ url_for('agent.listings') }}" class="btn btn-ghost btn-lg">Cancel</a>
+      </div>
+    </form>
+
+    <!-- Delete Section -->
+    <div style="margin-top:40px;padding-top:24px;border-top:1px solid var(--border);">
+      <h4 style="color:var(--danger);margin-bottom:8px;"><i class="fa-solid fa-triangle-exclamation"></i> Danger Zone</h4>
+      <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:16px;">Permanently delete this listing and all its images, inquiries and offers. This cannot be undone.</p>
+      <form method="POST" action="{{ url_for('agent.delete_listing', prop_id=prop.id) }}"
+            onsubmit="return confirm('Delete this listing permanently? This cannot be undone.')">
+        {{ csrf_token() }}
+        <button type="submit" class="btn btn-danger">
+          <i class="fa-solid fa-trash"></i> Delete Listing
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

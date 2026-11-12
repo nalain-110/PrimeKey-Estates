@@ -1,0 +1,24 @@
+{% extends 'client/base_client.html' %}
+{% block title %}Deal #{{ deal.id }}{% endblock %}
+{% block content %}
+<div class="" style="max-width:700px">
+  <a href="{{ url_for('client.deals') }}" class="small">&larr; Back to deals</a>
+  <h2 class="mt-2 mb-3">Deal #{{ deal.id }}</h2>
+  <dl class="row">
+    <dt class="col-sm-4">Property</dt>
+    <dd class="col-sm-8">{{ deal.property.title if deal.property else '—' }}</dd>
+
+    <dt class="col-sm-4">Deal type</dt>
+    <dd class="col-sm-8">{{ deal.deal_type }}</dd>
+
+    <dt class="col-sm-4">Price</dt>
+    <dd class="col-sm-8">PKR {{ '{:,.0f}'.format(deal.deal_price) }}</dd>
+
+    <dt class="col-sm-4">Date</dt>
+    <dd class="col-sm-8">{{ deal.deal_date.strftime('%d %b %Y') if deal.deal_date else '—' }}</dd>
+
+    <dt class="col-sm-4">Status</dt>
+    <dd class="col-sm-8"><span class="badge badge-{{ 'success' if deal.status == 'Completed' else 'warning' }}">{{ deal.status }}</span></dd>
+  </dl>
+</div>
+{% endblock %}

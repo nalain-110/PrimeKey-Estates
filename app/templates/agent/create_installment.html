@@ -1,0 +1,20 @@
+{% extends 'agent/base_agent.html' %}
+{% block title %}Create Installment Plan{% endblock %}
+{% block content %}
+<div class="" style="max-width:600px">
+  <h2 class="mb-1">Create installment plan</h2>
+  <p class="text-muted">Deal #{{ deal.id }}{% if deal.property %} · {{ deal.property.title }}{% endif %}</p>
+  <form method="POST" novalidate>
+    {{ form.hidden_tag() }}
+    {% for field in [form.total_amount, form.down_payment, form.installments_count, form.frequency, form.start_date] %}
+    <div class="mb-3">
+      {{ field.label(class_="form-label") }}
+      {{ field(class_="form-select" if field.type == 'SelectField' else "form-control") }}
+      {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+    </div>
+    {% endfor %}
+    <button class="btn btn-primary">Create plan</button>
+    <a href="{{ url_for('agent.installments') }}" class="btn btn-link">Cancel</a>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Admin Panel — PrimeKey Estates{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+{% with messages = get_flashed_messages(with_categories=True) %}
+  {% if messages %}
+    <div style="position:fixed;top:20px;right:24px;z-index:9999;min-width:320px;max-width:420px;">
+      {% for category, message in messages %}
+        <div class="alert alert-{{ 'success' if category=='success' else 'danger' if category in ['danger','error'] else category }}">
+          <i class="fa-solid fa-circle-{{ 'check' if category=='success' else 'exclamation' }}"></i>
+          {{ message }}<button class="alert-close" type="button">✕</button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<div class="dash-layout">
+  <!-- Admin Sidebar -->
+  <aside class="dash-sidebar" style="background:linear-gradient(180deg,#0a0a12 0%,#0f0f1a 100%);">
+    <div class="dash-sidebar-header">
+      <div class="dash-logo" style="color:var(--gold);">⚙ Admin</div>
+      <div class="dash-user">
+        <div class="dash-avatar" style="background:linear-gradient(135deg,var(--danger),#c0392b);">{{ session.get('user_name','A')[0].upper() }}</div>
+        <div>
+          <div class="dash-user-name">{{ session.get('user_name','Admin') }}</div>
+          <div class="dash-user-role" style="color:var(--danger);font-size:0.72rem;font-weight:700;">ADMINISTRATOR</div>
+        </div>
+      </div>
+    </div>
+    <nav class="dash-nav">
+      <div class="dash-nav-section">
+        <div class="dash-nav-label">Overview</div>
+        <a class="dash-nav-item {% if request.endpoint == 'admin.dashboard' %}active{% endif %}" href="{{ url_for('admin.dashboard') }}"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+        <a class="dash-nav-item {% if 'report' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.reports') }}"><i class="fa-solid fa-chart-pie"></i> Reports</a>
+      </div>
+      <div class="dash-nav-section">
+        <div class="dash-nav-label">Management</div>
+        <a class="dash-nav-item {% if 'user' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.users') }}"><i class="fa-solid fa-users"></i> Users</a>
+        <a class="dash-nav-item {% if 'propert' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.properties') }}"><i class="fa-solid fa-building"></i> Properties</a>
+        <a class="dash-nav-item {% if 'deal' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.deals') }}"><i class="fa-solid fa-handshake"></i> Deals</a>
+        <a class="dash-nav-item {% if 'payment' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.payments') }}"><i class="fa-solid fa-credit-card"></i> Payments</a>
+      </div>
+      <div class="dash-nav-section">
+        <div class="dash-nav-label">Content</div>
+        <a class="dash-nav-item {% if 'blog' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.blogs') }}"><i class="fa-solid fa-blog"></i> Blogs</a>
+        <a class="dash-nav-item {% if 'location' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.locations') }}"><i class="fa-solid fa-map-location-dot"></i> Locations</a>
+        <a class="dash-nav-item {% if 'message' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.messages') }}"><i class="fa-solid fa-envelope"></i> Contact Msgs</a>
+        <a class="dash-nav-item {% if 'property_type' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.property_types') }}"><i class="fa-solid fa-tags"></i> Prop Types</a>
+        <a class="dash-nav-item {% if 'coupon' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.coupons') }}"><i class="fa-solid fa-ticket"></i> Coupons</a>
+        <a class="dash-nav-item {% if 'setting' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.settings') }}"><i class="fa-solid fa-gear"></i> Settings</a>
+      </div>
+      <div class="dash-nav-section">
+        <div class="dash-nav-label">Account</div>
+        <a class="dash-nav-item" href="{{ url_for('public.index') }}" target="_blank"><i class="fa-solid fa-globe"></i> Public Site</a>
+        <a class="dash-nav-item" href="{{ url_for('auth.logout') }}" style="color:var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="dash-main" style="min-height:100vh;">
+    {% block content %}{% endblock %}
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

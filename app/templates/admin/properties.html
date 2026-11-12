@@ -1,0 +1,40 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Properties{% endblock %}
+{% block content %}
+<div class="">
+  <h2 class="mb-3">Properties</h2>
+  {% if props %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Title</th><th>Agent</th><th>Type</th><th>Price</th><th>Status</th><th>Verified</th><th>Featured</th><th></th></tr></thead>
+      <tbody>
+        {% for p in props %}
+        <tr>
+          <td>{{ p.title }}</td>
+          <td>{{ p.agent.user.name if p.agent and p.agent.user else '—' }}</td>
+          <td>{{ p.listing_type }}</td>
+          <td>PKR {{ '{:,.0f}'.format(p.price or 0) }}</td>
+          <td>{{ p.status }}</td>
+          <td><span class="badge badge-{{ 'success' if p.is_verified else 'muted' }}">{{ 'Yes' if p.is_verified else 'No' }}</span></td>
+          <td><span class="badge badge-{{ 'info' if p.is_featured else 'muted' }}">{{ 'Yes' if p.is_featured else 'No' }}</span></td>
+          <td class="text-end text-nowrap">
+            <form method="POST" action="{{ url_for('admin.verify_property', prop_id=p.id) }}" class="d-inline">{% if csrf_token is defined %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+              <button class="btn btn-sm btn-success">{{ 'Unverify' if p.is_verified else 'Verify' }}</button>
+            </form>
+            <form method="POST" action="{{ url_for('admin.toggle_featured', prop_id=p.id) }}" class="d-inline">{% if csrf_token is defined %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+              <button class="btn btn-sm btn-info">{{ 'Unfeature' if p.is_featured else 'Feature' }}</button>
+            </form>
+            <form method="POST" action="{{ url_for('admin.delete_property', prop_id=p.id) }}" class="d-inline" onsubmit="return confirm('Delete this property?');">{% if csrf_token is defined %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+              <button class="btn btn-sm btn-danger">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-center text-muted py-5"><p class="fs-5 mb-1">No properties yet</p></div>
+  {% endif %}
+</div>
+{% endblock %}

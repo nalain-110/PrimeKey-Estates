@@ -1,0 +1,21 @@
+{% extends 'agent/base_agent.html' %}
+{% block title %}Create Deal{% endblock %}
+{% block content %}
+<div class="" style="max-width:600px">
+  <h2 class="mb-1">Create deal</h2>
+  <p class="text-muted">{{ prop.title }}</p>
+  <form method="POST" novalidate>
+    {{ form.hidden_tag() }}
+    {% for field in [form.buyer_id, form.deal_price, form.deal_type] %}
+    <div class="mb-3">
+      {{ field.label(class_="form-label") }}
+      {{ field(class_="form-select" if field.type == 'SelectField' else "form-control") }}
+      {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+    </div>
+    {% endfor %}
+    <p class="small text-muted">A 2% commission is created automatically.</p>
+    <button class="btn btn-primary">Create deal</button>
+    <a href="{{ url_for('agent.listings') }}" class="btn btn-link">Cancel</a>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}PrimeKey Estates — Premium Real Estate Platform{% endblock %}</title>
+  <meta name="description" content="{% block meta_desc %}Buy, sell and rent houses, plots, flats and shops across Pakistan with PrimeKey Estates.{% endblock %}">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ── Navbar ──────────────────────────────────────────────── -->
+<nav class="navbar" id="navbar">
+  <a href="{{ url_for('public.index') }}" class="navbar-brand">
+    <div class="logo-icon">🏠</div>
+    Prime<span>Key</span>
+  </a>
+
+  <div class="nav-links" id="navLinks">
+    <a href="{{ url_for('public.index') }}" class="{% if request.endpoint == 'public.index' %}active{% endif %}">Home</a>
+    <a href="{{ url_for('public.properties') }}" class="{% if 'properties' in request.endpoint %}active{% endif %}">Properties</a>
+    <a href="{{ url_for('public.agents_list') }}" class="{% if request.endpoint == 'public.agents_list' %}active{% endif %}">Agents</a>
+    <a href="{{ url_for('public.blog_list') }}" class="{% if 'blog' in request.endpoint %}active{% endif %}">Blog</a>
+    <a href="{{ url_for('public.about') }}" class="{% if request.endpoint == 'public.about' %}active{% endif %}">About</a>
+    <a href="{{ url_for('public.contact') }}" class="{% if request.endpoint == 'public.contact' %}active{% endif %}">Contact</a>
+  </div>
+
+  <div class="nav-actions">
+    {% if session.get('user_id') %}
+      <!-- Dashboard quick links -->
+      {% if session.get('user_role') == 1 %}
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-ghost btn-sm"><i class="fa-solid fa-gauge"></i> Admin</a>
+      {% elif session.get('user_role') == 2 %}
+        <a href="{{ url_for('agent.dashboard') }}" class="btn btn-ghost btn-sm"><i class="fa-solid fa-gauge"></i> Agent</a>
+      {% else %}
+        <a href="{{ url_for('client.dashboard') }}" class="btn btn-ghost btn-sm"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+      {% endif %}
+      <!-- User avatar dropdown -->
+      <div class="nav-user">
+        <div class="nav-avatar" data-dropdown="#userDropdown" title="{{ session.get('user_name') }}">
+          {{ session.get('user_name', 'U')[0].upper() }}
+        </div>
+        <div class="dropdown-menu" id="userDropdown">
+          <div style="padding:10px 14px 8px;">
+            <div style="font-weight:700;font-size:0.9rem;color:var(--text-primary);">{{ session.get('user_name') }}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">{{ session.get('user_email') }}</div>
+          </div>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="{{ url_for('auth.profile') }}"><i class="fa-solid fa-user"></i> My Profile</a>
+          {% if session.get('user_role') == 3 %}
+            <a class="dropdown-item" href="{{ url_for('client.favorites') }}"><i class="fa-solid fa-heart"></i> Favorites</a>
+            <a class="dropdown-item" href="{{ url_for('client.deals') }}"><i class="fa-solid fa-handshake"></i> My Deals</a>
+          {% elif session.get('user_role') == 2 %}
+            <a class="dropdown-item" href="{{ url_for('agent.listings') }}"><i class="fa-solid fa-list"></i> My Listings</a>
+            <a class="dropdown-item" href="{{ url_for('agent.commissions') }}"><i class="fa-solid fa-dollar-sign"></i> Commissions</a>
+          {% endif %}
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="{{ url_for('auth.logout') }}" style="color:var(--danger);">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+          </a>
+        </div>
+      </div>
+    {% else %}
+      <a href="{{ url_for('auth.login') }}" class="btn btn-ghost btn-sm">Login</a>
+      <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm">Get Started</a>
+    {% endif %}
+
+    <!-- Hamburger -->
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ── Flash Messages ───────────────────────────────────────── -->
+{% with messages = get_flashed_messages(with_categories=True) %}
+  {% if messages %}
+    <div style="position:fixed;top:80px;right:24px;z-index:9999;min-width:320px;max-width:420px;">
+      {% for category, message in messages %}
+        <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' or category == 'danger' else category }}">
+          <i class="fa-solid fa-{{ 'circle-check' if category == 'success' else 'circle-exclamation' if category in ['danger','error'] else 'circle-info' if category == 'info' else 'triangle-exclamation' }}"></i>
+          {{ message }}
+          <button class="alert-close" type="button">✕</button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<!-- ── Page Content ─────────────────────────────────────────── -->
+{% block content %}{% endblock %}
+
+<!-- ── Footer (hidden on dashboard pages) ───────────────────── -->
+{% block show_footer %}
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo">Prime<span>Key</span> Estates</div>
+        <p class="footer-desc">Pakistan's most trusted real estate platform. Connecting buyers, sellers, tenants and agents for seamless property deals since 2020.</p>
+        <div class="d-flex gap-8 mt-16">
+          <a href="#" class="social-btn"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="social-btn"><i class="fab fa-twitter"></i></a>
+          <a href="#" class="social-btn"><i class="fab fa-youtube"></i></a>
+          <a href="#" class="social-btn"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-title">Properties</div>
+        <div class="footer-links">
+          <a href="{{ url_for('public.properties') }}?listing_type=Sale">Houses for Sale</a>
+          <a href="{{ url_for('public.properties') }}?listing_type=Rent">Properties for Rent</a>
+          <a href="{{ url_for('public.properties') }}?type_id=2">Plots</a>
+          <a href="{{ url_for('public.properties') }}?type_id=3">Flats & Apartments</a>
+          <a href="{{ url_for('public.properties') }}?type_id=4">Commercial Shops</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-title">Company</div>
+        <div class="footer-links">
+          <a href="{{ url_for('public.about') }}">About Us</a>
+          <a href="{{ url_for('public.agents_list') }}">Our Agents</a>
+          <a href="{{ url_for('public.blog_list') }}">Blog & News</a>
+          <a href="{{ url_for('public.contact') }}">Contact Us</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-title">Account</div>
+        <div class="footer-links">
+          {% if session.get('user_id') %}
+            <a href="{{ url_for('auth.profile') }}">My Profile</a>
+            {% if session.get('user_role') == 2 %}
+              <a href="{{ url_for('agent.add_listing') }}">Add Listing</a>
+            {% endif %}
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+          {% else %}
+            <a href="{{ url_for('auth.register') }}">Register Free</a>
+            <a href="{{ url_for('auth.login') }}">Login</a>
+          {% endif %}
+        </div>
+        <!-- Newsletter mini -->
+        <div class="footer-title mt-24">Newsletter</div>
+        <form action="{{ url_for('public.subscribe') }}" method="POST" style="display:flex;gap:6px;margin-top:8px;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input class="form-control" name="email" type="email" placeholder="Your email" style="font-size:0.8rem;padding:8px 12px;">
+          <button class="btn btn-primary btn-sm" type="submit" style="white-space:nowrap;">Subscribe</button>
+        </form>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© {{ 2024 }} PrimeKey Estates. All rights reserved. | Built with Flask & ❤️</div>
+      <div class="d-flex gap-12">
+        <a href="#" style="font-size:0.8rem;color:var(--text-muted);">Privacy Policy</a>
+        <a href="#" style="font-size:0.8rem;color:var(--text-muted);">Terms of Service</a>
+      </div>
+    </div>
+  </div>
+</footer>
+{% endblock %}
+
+<!-- ── Scripts ──────────────────────────────────────────────── -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

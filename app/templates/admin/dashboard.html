@@ -1,0 +1,152 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="">
+  <h2 class="mb-4">Admin dashboard</h2>
+
+  <div class="row g-3 mb-4">
+    {% for label, value in [
+      ('Users', total_users), ('Properties', total_props), ('Deals', total_deals),
+      ('Agents', total_agents), ('Inquiries', total_inquiries),
+      ('Pending inquiries', pending_inq), ('Pending offers', pending_offers),
+      ('Unread messages', unread_msgs)] %}
+    <div class="col-6 col-md-3 col-xl">
+      <div class="card card-body">
+        <div class="text-muted small">{{ label }}</div>
+        <div class="fs-3">{{ value }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-6">
+      <div class="card card-body">
+        <div class="text-muted small">Total deal value</div>
+        <div class="fs-3">PKR {{ '{:,.0f}'.format(total_revenue or 0) }}</div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card card-body">
+        <div class="text-muted small">Total commission</div>
+        <div class="fs-3">PKR {{ '{:,.0f}'.format(total_comm or 0) }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <div class="col-lg-8">
+      <div class="card card-body">
+        <h5>Deals per month</h5>
+        <canvas id="dealsChart" height="110"></canvas>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card card-body">
+        <h5>Users by role</h5>
+        <canvas id="roleChart" height="200"></canvas>
+      </div>
+    </div>
+    <div class="col-lg-8">
+      <div class="card card-body">
+        <h5>Deal value per month (PKR)</h5>
+        <canvas id="revenueChart" height="110"></canvas>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card card-body">
+        <h5>Properties by type</h5>
+        <canvas id="typeChart" height="200"></canvas>
+        <div class="small text-muted mt-2">For sale: {{ for_sale }} · For rent: {{ for_rent }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <h5>Recent deals</h5>
+      {% if recent_deals %}
+      <ul class="list-group mb-4">
+        {% for d in recent_deals %}
+        <li class="list-group-item d-flex justify-content-between">
+          <span>{{ d.property.title if d.property else 'Deal #' ~ d.id }}</span>
+          <span>PKR {{ '{:,.0f}'.format(d.deal_price or 0) }} <span class="badge badge-{{ 'success' if d.status == 'Completed' else 'warning' }}">{{ d.status }}</span></span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}<p class="text-muted">No deals yet.</p>{% endif %}
+
+      <h5>Recent properties</h5>
+      {% if recent_props %}
+      <ul class="list-group mb-4">
+        {% for p in recent_props %}
+        <li class="list-group-item d-flex justify-content-between">
+          <span>{{ p.title }}</span><span class="text-muted">{{ p.status }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}<p class="text-muted">No properties yet.</p>{% endif %}
+    </div>
+
+    <div class="col-lg-6">
+      <h5>New users</h5>
+      {% if recent_users %}
+      <ul class="list-group mb-4">
+        {% for u in recent_users %}
+        <li class="list-group-item d-flex justify-content-between">
+          <span>{{ u.name }}</span><span class="text-muted">{{ u.email }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}<p class="text-muted">No users yet.</p>{% endif %}
+
+      <h5>Recent contact messages</h5>
+      {% if recent_contacts %}
+      <ul class="list-group mb-4">
+        {% for m in recent_contacts %}
+        <li class="list-group-item">
+          <strong>{{ m.name }}</strong>
+          <div class="small text-muted">{{ m.subject if m.subject is defined and m.subject else (m.message[:70] if m.message else '') }}</div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}<p class="text-muted">No messages yet.</p>{% endif %}
+
+      <h5>Recent activity</h5>
+      {% if recent_logs %}
+      <ul class="list-group">
+        {% for l in recent_logs %}
+        <li class="list-group-item small d-flex justify-content-between">
+          <span>{{ l.action if l.action is defined else l.id }}</span>
+          <span class="text-muted">{{ l.timestamp.strftime('%d %b, %I:%M %p') if l.timestamp else '' }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}<p class="text-muted">No activity logged.</p>{% endif %}
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  const labels = {{ chart_labels|tojson }};
+  new Chart(document.getElementById('dealsChart'), {
+    type: 'bar',
+    data: { labels: labels, datasets: [{ label: 'Deals', data: {{ deals_data|tojson }}, backgroundColor: '#0d6efd' }] },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+  });
+  new Chart(document.getElementById('revenueChart'), {
+    type: 'line',
+    data: { labels: labels, datasets: [{ label: 'PKR', data: {{ revenue_data|tojson }}, borderColor: '#198754', tension: 0.3 }] },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+  new Chart(document.getElementById('roleChart'), {
+    type: 'doughnut',
+    data: { labels: ['Admins', 'Agents', 'Clients'], datasets: [{ data: {{ role_data|tojson }}, backgroundColor: ['#dc3545', '#0d6efd', '#198754'] }] }
+  });
+  new Chart(document.getElementById('typeChart'), {
+    type: 'doughnut',
+    data: { labels: {{ prop_type_labels|tojson }}, datasets: [{ data: {{ prop_type_data|tojson }} }] }
+  });
+</script>
+{% endblock %}

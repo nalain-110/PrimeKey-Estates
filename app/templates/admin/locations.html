@@ -1,0 +1,61 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Locations{% endblock %}
+{% block content %}
+<div class="">
+  <h2 class="mb-4">Locations</h2>
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <h5>Cities</h5>
+      <form method="POST" action="{{ url_for('admin.add_city') }}" class="mb-3">{% if csrf_token is defined %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+        <div class="input-group mb-2">
+          <input name="name" class="form-control" placeholder="City name" required>
+          <input name="province" class="form-control" placeholder="Province">
+          <button class="btn btn-primary">Add city</button>
+        </div>
+      </form>
+      {% if cities %}
+      <ul class="list-group">
+        {% for c in cities %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <span>{{ c.name }}{% if c.province %} <small class="text-muted">· {{ c.province }}</small>{% endif %}</span>
+          <form method="POST" action="{{ url_for('admin.delete_city', city_id=c.id) }}" onsubmit="return confirm('Delete this city?');">{% if csrf_token is defined %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+            <button class="btn btn-sm btn-danger">Delete</button>
+          </form>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}<p class="text-muted">No cities yet.</p>{% endif %}
+    </div>
+
+    <div class="col-lg-4">
+      <h5>Areas</h5>
+      <form method="POST" action="{{ url_for('admin.add_area') }}" class="mb-3">{% if csrf_token is defined %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+        <div class="input-group mb-2">
+          <input name="name" class="form-control" placeholder="Area name" required>
+          <select name="city_id" class="form-select" required>
+            <option value="">City</option>
+            {% for c in cities %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
+          </select>
+          <button class="btn btn-primary">Add area</button>
+        </div>
+      </form>
+      {% if areas %}
+      <ul class="list-group">
+        {% for a in areas %}
+        <li class="list-group-item">{{ a.name }}{% if a.city %} <small class="text-muted">· {{ a.city.name }}</small>{% endif %}</li>
+        {% endfor %}
+      </ul>
+      {% else %}<p class="text-muted">No areas yet.</p>{% endif %}
+    </div>
+
+    <div class="col-lg-4">
+      <h5>Sectors</h5>
+      {% if sectors %}
+      <ul class="list-group">
+        {% for s in sectors %}<li class="list-group-item">{{ s.name }}</li>{% endfor %}
+      </ul>
+      {% else %}<p class="text-muted">No sectors yet.</p>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

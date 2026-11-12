@@ -1,0 +1,52 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Payments{% endblock %}
+{% block content %}
+<div class="">
+  <h2 class="mb-3">Commissions</h2>
+  {% if commissions %}
+  <div class="table-wrap mb-5">
+    <table class="table">
+      <thead><tr><th>Deal</th><th>Agent</th><th>Rate</th><th>Amount</th><th>Status</th><th>Paid on</th><th></th></tr></thead>
+      <tbody>
+        {% for c in commissions %}
+        <tr>
+          <td>#{{ c.deal_id }}</td>
+          <td>{{ c.agent.user.name if c.agent and c.agent.user else '—' }}</td>
+          <td>{{ c.rate }}%</td>
+          <td>PKR {{ '{:,.0f}'.format(c.amount or 0) }}</td>
+          <td><span class="badge badge-{{ 'success' if c.status == 'Paid' else 'warning' }}">{{ c.status }}</span></td>
+          <td>{{ c.paid_date.strftime('%d %b %Y') if c.paid_date else '—' }}</td>
+          <td class="text-end">
+            {% if c.status != 'Paid' %}
+            <form method="POST" action="{{ url_for('admin.mark_commission_paid', comm_id=c.id) }}">{% if csrf_token is defined %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+              <button class="btn btn-sm btn-success">Mark as paid</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}<p class="text-muted mb-5">No commissions yet.</p>{% endif %}
+
+  <h2 class="mb-3">Payments</h2>
+  {% if payments %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>ID</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for p in payments %}
+        <tr>
+          <td>#{{ p.id }}</td>
+          <td>{% if p.amount is defined and p.amount is not none %}PKR {{ '{:,.0f}'.format(p.amount) }}{% else %}—{% endif %}</td>
+          <td>{{ p.payment_date.strftime('%d %b %Y') if p.payment_date else '—' }}</td>
+          <td>{{ p.status if p.status is defined else '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}<p class="text-muted">No payments yet.</p>{% endif %}
+</div>
+{% endblock %}

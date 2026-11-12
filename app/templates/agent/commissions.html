@@ -1,0 +1,45 @@
+{% extends 'agent/base_agent.html' %}
+{% block title %}Commissions{% endblock %}
+{% block content %}
+<div class="">
+  <h2 class="mb-3">Commissions</h2>
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6">
+      <div class="card card-body">
+        <div class="text-muted small">Paid</div>
+        <div class="fs-4">PKR {{ '{:,.0f}'.format(total_earned) }}</div>
+      </div>
+    </div>
+    <div class="col-sm-6">
+      <div class="card card-body">
+        <div class="text-muted small">Pending</div>
+        <div class="fs-4">PKR {{ '{:,.0f}'.format(total_pending) }}</div>
+      </div>
+    </div>
+  </div>
+  {% if comms %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Deal</th><th>Rate</th><th>Amount</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for c in comms %}
+        <tr>
+          <td>#{{ c.deal_id }}</td>
+          <td>{{ c.rate }}%</td>
+          <td>PKR {{ '{:,.0f}'.format(c.amount) }}</td>
+          <td><span class="badge badge-{{ 'success' if c.status == 'Paid' else 'warning' }}">{{ c.status }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-center text-muted py-5">
+    <p class="fs-5 mb-1">No commissions yet</p>
+    <p class="mb-0">A commission is created each time you complete a deal.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

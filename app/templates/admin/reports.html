@@ -1,0 +1,43 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="">
+  <h2 class="mb-4">Reports</h2>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-6"><div class="card card-body"><div class="text-muted small">Total deal value</div><div class="fs-3">PKR {{ '{:,.0f}'.format(total_revenue or 0) }}</div></div></div>
+    <div class="col-md-6"><div class="card card-body"><div class="text-muted small">Commission paid</div><div class="fs-3">PKR {{ '{:,.0f}'.format(total_comm_paid or 0) }}</div></div></div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8"><div class="card card-body"><h5>Monthly deal value (PKR)</h5><canvas id="revChart" height="110"></canvas></div></div>
+    <div class="col-lg-4"><div class="card card-body"><h5>Deal status</h5><canvas id="statusChart" height="200"></canvas></div></div>
+    <div class="col-lg-6"><div class="card card-body"><h5>Deals per agent</h5><canvas id="agentDealsChart" height="140"></canvas></div></div>
+    <div class="col-lg-6"><div class="card card-body"><h5>Value per agent (PKR)</h5><canvas id="agentRevChart" height="140"></canvas></div></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  const agentNames = {{ agent_names|tojson }};
+  new Chart(document.getElementById('revChart'), {
+    type: 'line',
+    data: { labels: {{ rev_labels|tojson }}, datasets: [{ label: 'PKR', data: {{ rev_data|tojson }}, borderColor: '#198754', tension: 0.3 }] },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+  new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: { labels: ['Completed', 'In progress', 'Cancelled'], datasets: [{ data: [{{ completed }}, {{ in_progress }}, {{ cancelled }}], backgroundColor: ['#198754', '#ffc107', '#dc3545'] }] }
+  });
+  new Chart(document.getElementById('agentDealsChart'), {
+    type: 'bar',
+    data: { labels: agentNames, datasets: [{ label: 'Deals', data: {{ agent_deals|tojson }}, backgroundColor: '#0d6efd' }] },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+  });
+  new Chart(document.getElementById('agentRevChart'), {
+    type: 'bar',
+    data: { labels: agentNames, datasets: [{ label: 'PKR', data: {{ agent_revenue|tojson }}, backgroundColor: '#6f42c1' }] },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'client/base_client.html' %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<div class="" style="max-width:700px">
+  <h2 class="mb-3">Notifications</h2>
+  {% if notifs %}
+  <ul class="list-group">
+    {% for n in notifs %}
+    <li class="list-group-item {{ '' if n.is_read else 'list-group-item-warning' }}">
+      {% if n.link %}<a href="{{ n.link }}" class="text-decoration-none">{{ n.message }}</a>{% else %}{{ n.message }}{% endif %}
+      <div class="small text-muted">{{ n.created_at.strftime('%d %b %Y, %I:%M %p') if n.created_at else '' }}</div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="text-center text-muted py-5">
+    <p class="fs-5 mb-1">No notifications</p>
+    <p class="mb-0">Updates on your inquiries, offers and visits will show up here.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

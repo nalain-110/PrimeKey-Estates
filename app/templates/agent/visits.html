@@ -1,0 +1,46 @@
+{% extends 'agent/base_agent.html' %}
+{% block title %}Site Visits{% endblock %}
+{% block content %}
+<div class="">
+  <h2 class="mb-3">Site visits</h2>
+  {% if visits %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Property</th><th>Client</th><th>Date</th><th>Status</th><th>Update</th></tr>
+      </thead>
+      <tbody>
+        {% for v in visits %}
+        <tr>
+          <td>{{ v.property.title if v.property else '—' }}</td>
+          <td>{{ v.client.name if v.client and v.client.name is defined else (v.client.username if v.client and v.client.username is defined else '—') }}</td>
+          <td>{{ v.scheduled_date.strftime('%d %b %Y, %I:%M %p') if v.scheduled_date else '—' }}</td>
+          <td>
+            {% if v.status == 'Completed' %}<span class="badge badge-success">Completed</span>
+            {% elif v.status == 'Cancelled' %}<span class="badge badge-danger">Cancelled</span>
+            {% else %}<span class="badge badge-warning">{{ v.status or 'Scheduled' }}</span>{% endif %}
+          </td>
+          <td>
+            <form method="POST" action="{{ url_for('agent.update_visit', visit_id=v.id) }}" class="d-flex gap-2">
+              {% if csrf_token is defined %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+              <select name="status" class="form-select form-select-sm">
+                {% for s in ['Scheduled', 'Completed', 'Cancelled'] %}
+                <option value="{{ s }}" {{ 'selected' if v.status == s }}>{{ s }}</option>
+                {% endfor %}
+              </select>
+              <button class="btn btn-sm btn-primary">Save</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-center text-muted py-5">
+    <p class="fs-5 mb-1">No site visits yet</p>
+    <p class="mb-0">Visit requests from clients will appear here.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

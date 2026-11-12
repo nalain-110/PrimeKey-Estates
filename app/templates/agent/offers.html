@@ -1,0 +1,48 @@
+{% extends 'agent/base_agent.html' %}
+{% block title %}Offers{% endblock %}
+{% block content %}
+<div class="">
+  <h2 class="mb-3">Offers</h2>
+  {% if ofs %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Property</th><th>Client</th><th>Offer</th><th>Status</th><th>Respond</th></tr>
+      </thead>
+      <tbody>
+        {% for o in ofs %}
+        {% set amount = o.offered_price %}
+        <tr>
+          <td>{{ o.property.title if o.property else '—' }}</td>
+          <td>{{ o.client.name if o.client and o.client.name is defined else (o.client.username if o.client and o.client.username is defined else '—') }}</td>
+          <td>
+            {% if amount is not none %}PKR {{ '{:,.0f}'.format(amount) }}{% else %}—{% endif %}
+            {% if o.counter_price %}<div class="small text-muted">Counter: PKR {{ '{:,.0f}'.format(o.counter_price) }}</div>{% endif %}
+          </td>
+          <td>
+            <span class="badge badge-{{ 'success' if o.status == 'Accepted' else ('danger' if o.status == 'Rejected' else ('info' if o.status == 'Countered' else 'warning')) }}">{{ o.status }}</span>
+          </td>
+          <td>
+            {% if o.status == 'Pending' %}
+            <form method="POST" action="{{ url_for('agent.update_offer', offer_id=o.id) }}" class="d-flex gap-2 flex-wrap">
+              {% if csrf_token is defined %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+              <input type="number" step="any" name="counter_price" class="form-control form-control-sm" style="width:130px" placeholder="Counter price">
+              <button name="status" value="Accepted" class="btn btn-sm btn-success">Accept</button>
+              <button name="status" value="Countered" class="btn btn-sm btn-info">Counter</button>
+              <button name="status" value="Rejected" class="btn btn-sm btn-danger">Reject</button>
+            </form>
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-center text-muted py-5">
+    <p class="fs-5 mb-1">No offers yet</p>
+    <p class="mb-0">Offers from clients on your listings will appear here.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

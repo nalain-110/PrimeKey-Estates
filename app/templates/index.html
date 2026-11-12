@@ -1,0 +1,395 @@
+{% extends 'base.html' %}
+{% block title %}PrimeKey Estates — Pakistan's #1 Real Estate Platform{% endblock %}
+{% block meta_desc %}Buy, sell and rent houses, plots, flats and shops across Pakistan. Discover verified listings with trusted agents on PrimeKey Estates.{% endblock %}
+
+{% block content %}
+
+<!-- ══════════════════ HERO ══════════════════ -->
+<section class="hero" id="hero">
+  <div class="hero-bg">
+    <div class="hero-grid"></div>
+    <div class="hero-glow hero-glow-1"></div>
+    <div class="hero-glow hero-glow-2"></div>
+  </div>
+  <div class="hero-content container text-center">
+    <div class="hero-eyebrow animate-fade-up">
+      <span class="eyebrow-pill">🏆 Pakistan's #1 Real Estate Platform</span>
+    </div>
+    <h1 class="hero-title animate-fade-up" style="animation-delay:0.1s">
+      Find Your <span class="text-gradient">Dream Property</span>
+    </h1>
+    <p class="hero-subtitle animate-fade-up" style="animation-delay:0.2s">
+      Connect with verified agents, explore thousands of listings and secure your ideal home — all in one place.
+    </p>
+    <div class="d-flex gap-16 justify-center animate-fade-up" style="animation-delay:0.3s;flex-wrap:wrap;">
+      <a href="{{ url_for('public.properties') }}" class="btn btn-primary btn-lg">
+        <i class="fa-solid fa-magnifying-glass"></i> Browse Properties
+      </a>
+      {% if session.get('user_role') == 2 %}
+      <a href="{{ url_for('agent.add_listing') }}" class="btn btn-outline btn-lg">
+        <i class="fa-solid fa-plus"></i> List Your Property
+      </a>
+      {% else %}
+      <a href="{{ url_for('auth.register') }}" class="btn btn-outline btn-lg">
+        <i class="fa-solid fa-plus"></i> List Your Property
+      </a>
+      {% endif %}
+    </div>
+
+    <!-- Hero Quick Stats -->
+    <div class="hero-stats animate-fade-up" style="animation-delay:0.4s">
+      <div class="hero-stat"><strong>{{ total_props }}+</strong><span>Properties</span></div>
+      <div class="hero-stat-divider"></div>
+      <div class="hero-stat"><strong>{{ total_agents }}+</strong><span>Verified Agents</span></div>
+      <div class="hero-stat-divider"></div>
+      <div class="hero-stat"><strong>{{ total_cities }}+</strong><span>Cities</span></div>
+    </div>
+
+    <!-- Search Bar -->
+    <form class="search-bar animate-fade-up" style="animation-delay:0.5s" action="{{ url_for('public.properties') }}" method="GET">
+      <div class="search-field search-field-main">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" name="keyword" placeholder="Search by area, city or property name..." class="search-input" value="{{ request.args.get('keyword','') }}">
+      </div>
+      <div class="search-select-wrap">
+        <i class="fa-solid fa-home search-icon-sm"></i>
+        <select name="type_id" class="search-select">
+          <option value="">Property Type</option>
+          {% for t in prop_types %}
+          <option value="{{ t.id }}">{{ t.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="search-select-wrap">
+        <i class="fa-solid fa-location-dot search-icon-sm"></i>
+        <select name="city_id" class="search-select">
+          <option value="">Select City</option>
+          {% for c in cities %}
+          <option value="{{ c.id }}">{{ c.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="search-select-wrap">
+        <i class="fa-solid fa-tag search-icon-sm"></i>
+        <select name="listing_type" class="search-select">
+          <option value="">Buy / Rent</option>
+          <option value="Sale">Buy</option>
+          <option value="Rent">Rent</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary search-btn">
+        <i class="fa-solid fa-magnifying-glass"></i> Search
+      </button>
+    </form>
+  </div>
+</section>
+
+<!-- ══════════════════ STATS BANNER ══════════════════ -->
+<section class="stats-banner">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stats-item">
+        <div class="stats-num" data-count="{{ total_props }}" data-suffix="+">0+</div>
+        <div class="stats-label"><i class="fa-solid fa-building"></i> Properties Listed</div>
+      </div>
+      <div class="stats-item">
+        <div class="stats-num" data-count="{{ total_agents }}" data-suffix="+">0+</div>
+        <div class="stats-label"><i class="fa-solid fa-user-tie"></i> Verified Agents</div>
+      </div>
+      <div class="stats-item">
+        <div class="stats-num" data-count="{{ total_cities }}" data-suffix="+">0+</div>
+        <div class="stats-label"><i class="fa-solid fa-map-location-dot"></i> Cities Covered</div>
+      </div>
+      <div class="stats-item">
+        <div class="stats-num" data-count="{{ total_deals }}" data-suffix="+">0+</div>
+        <div class="stats-label"><i class="fa-solid fa-handshake"></i> Deals Closed</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ PROPERTY TYPES ══════════════════ -->
+<section class="section">
+  <div class="container">
+    <div class="section-header text-center animate-fade-up">
+      <div class="section-eyebrow">Explore</div>
+      <h2 class="section-title">Browse by Category</h2>
+      <p class="section-subtitle">Find exactly what you're looking for</p>
+    </div>
+    <div class="type-grid">
+      {% set type_icons = ['fa-house','fa-layer-group','fa-building','fa-store','fa-warehouse','fa-industry'] %}
+      {% set type_colors = ['gold','blue','green','orange','purple','teal'] %}
+      {% for t in prop_types %}
+      <a href="{{ url_for('public.properties') }}?type_id={{ t.id }}" class="type-card animate-fade-up">
+        <div class="type-icon type-icon-{{ type_colors[loop.index0 % 6] }}">
+          <i class="fa-solid {{ type_icons[loop.index0 % 6] }}"></i>
+        </div>
+        <div class="type-name">{{ t.name }}</div>
+        <div class="type-count">{{ t.properties|length }} listings</div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ FEATURED PROPERTIES ══════════════════ -->
+<section class="section section-dark">
+  <div class="container">
+    <div class="section-header d-flex justify-between align-center animate-fade-up" style="flex-wrap:wrap;gap:12px;">
+      <div>
+        <div class="section-eyebrow">Top Picks</div>
+        <h2 class="section-title" style="margin-bottom:0;">Featured Properties</h2>
+      </div>
+      <a href="{{ url_for('public.properties') }}?is_featured=1" class="btn btn-outline">View All <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+    {% if featured %}
+    <div class="prop-grid animate-fade-up">
+      {% for prop in featured %}
+      <div class="prop-card">
+        <div class="prop-img-wrap">
+          {% if prop.images %}
+            <img src="{{ url_for('static', filename='images/uploads/' + prop.images[0].image_url) }}" alt="{{ prop.title }}" loading="lazy">
+          {% else %}
+            <div class="prop-img-placeholder" style="background:linear-gradient(135deg,#1a1a2e,#b8912e);"></div>
+          {% endif %}
+          <div class="prop-badges">
+            {% if prop.is_featured %}<span class="badge badge-gold">⭐ Featured</span>{% endif %}
+            <span class="badge {% if prop.listing_type == 'Sale' %}badge-info{% else %}badge-success{% endif %}">{{ prop.listing_type }}</span>
+          </div>
+          <div class="prop-overlay">
+            {% if session.get('user_id') %}
+            <form action="{{ url_for('client.toggle_favorite', prop_id=prop.id) }}" method="POST" style="display:inline;">
+              {{ csrf_token() }}
+              <button class="prop-action-btn" title="Save"><i class="fa-solid fa-heart"></i></button>
+            </form>
+            {% endif %}
+            <a href="{{ url_for('public.property_detail', prop_id=prop.id) }}" class="prop-action-btn" title="View"><i class="fa-solid fa-eye"></i></a>
+          </div>
+        </div>
+        <div class="prop-body">
+          <div class="prop-price">
+            PKR {% if prop.price >= 10000000 %}{{ '%.1f'|format(prop.price/10000000) }} Cr{% elif prop.price >= 100000 %}{{ '%.1f'|format(prop.price/100000) }} Lac{% else %}{{ '{:,.0f}'.format(prop.price) }}{% endif %}
+            {% if prop.listing_type == 'Rent' %}<span class="prop-price-unit">/month</span>{% endif %}
+          </div>
+          <h3 class="prop-title"><a href="{{ url_for('public.property_detail', prop_id=prop.id) }}">{{ prop.title }}</a></h3>
+          <div class="prop-location"><i class="fa-solid fa-location-dot"></i> {{ prop.location.area.name if prop.location.area else '' }}, {{ prop.location.city.name if prop.location.city else '' }}</div>
+          <div class="prop-features">
+            {% if prop.bedrooms %}<span><i class="fa-solid fa-bed"></i> {{ prop.bedrooms }} Beds</span>{% endif %}
+            {% if prop.bathrooms %}<span><i class="fa-solid fa-bath"></i> {{ prop.bathrooms }} Baths</span>{% endif %}
+            {% if prop.size %}<span><i class="fa-solid fa-vector-square"></i> {{ prop.size }} {{ prop.size_unit }}</span>{% endif %}
+          </div>
+        </div>
+        <div class="prop-footer">
+          <div class="prop-agent">
+            <div class="prop-agent-avatar">{{ prop.agent.user.name[0].upper() if prop.agent else 'A' }}</div>
+            <span>{{ prop.agent.user.name if prop.agent else 'Agent' }}</span>
+          </div>
+          <span class="prop-date">{{ prop.created_at.strftime('%d %b %Y') }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state animate-fade-up">
+      <i class="fa-solid fa-building"></i>
+      <h3>No featured properties yet</h3>
+      <p>Check back soon for premium featured listings.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- ══════════════════ LATEST LISTINGS ══════════════════ -->
+<section class="section">
+  <div class="container">
+    <div class="section-header d-flex justify-between align-center animate-fade-up" style="flex-wrap:wrap;gap:12px;">
+      <div>
+        <div class="section-eyebrow">Just Added</div>
+        <h2 class="section-title" style="margin-bottom:0;">Latest Listings</h2>
+      </div>
+      <a href="{{ url_for('public.properties') }}" class="btn btn-outline">All Properties <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+    {% if latest %}
+    <div class="prop-grid animate-fade-up">
+      {% for prop in latest %}
+      <div class="prop-card">
+        <div class="prop-img-wrap">
+          {% if prop.images %}
+            <img src="{{ url_for('static', filename='images/uploads/' + prop.images[0].image_url) }}" alt="{{ prop.title }}" loading="lazy">
+          {% else %}
+            <div class="prop-img-placeholder" style="background:linear-gradient(135deg,#0d1b2a,#b8912e);display:flex;align-items:center;justify-content:center;height:100%;"><i class="fa-solid fa-building" style="font-size:3rem;color:rgba(255,255,255,0.3)"></i></div>
+          {% endif %}
+          <div class="prop-badges">
+            <span class="badge badge-warning">NEW</span>
+            <span class="badge {% if prop.listing_type == 'Sale' %}badge-info{% else %}badge-success{% endif %}">{{ prop.listing_type }}</span>
+          </div>
+          <div class="prop-overlay">
+            {% if session.get('user_id') %}
+            <form action="{{ url_for('client.toggle_favorite', prop_id=prop.id) }}" method="POST" style="display:inline;">
+              {{ csrf_token() }}
+              <button class="prop-action-btn" title="Save"><i class="fa-solid fa-heart"></i></button>
+            </form>
+            {% endif %}
+            <a href="{{ url_for('public.property_detail', prop_id=prop.id) }}" class="prop-action-btn" title="View"><i class="fa-solid fa-eye"></i></a>
+          </div>
+        </div>
+        <div class="prop-body">
+          <div class="prop-price">
+            PKR {% if prop.price >= 10000000 %}{{ '%.1f'|format(prop.price/10000000) }} Cr{% elif prop.price >= 100000 %}{{ '%.1f'|format(prop.price/100000) }} Lac{% else %}{{ '{:,.0f}'.format(prop.price) }}{% endif %}
+            {% if prop.listing_type == 'Rent' %}<span class="prop-price-unit">/month</span>{% endif %}
+          </div>
+          <h3 class="prop-title"><a href="{{ url_for('public.property_detail', prop_id=prop.id) }}">{{ prop.title }}</a></h3>
+          <div class="prop-location"><i class="fa-solid fa-location-dot"></i> {{ prop.location.area.name if prop.location.area else '' }}, {{ prop.location.city.name if prop.location.city else '' }}</div>
+          <div class="prop-features">
+            {% if prop.bedrooms %}<span><i class="fa-solid fa-bed"></i> {{ prop.bedrooms }} Beds</span>{% endif %}
+            {% if prop.bathrooms %}<span><i class="fa-solid fa-bath"></i> {{ prop.bathrooms }} Baths</span>{% endif %}
+            {% if prop.size %}<span><i class="fa-solid fa-vector-square"></i> {{ prop.size }} {{ prop.size_unit }}</span>{% endif %}
+          </div>
+        </div>
+        <div class="prop-footer">
+          <div class="prop-agent">
+            <div class="prop-agent-avatar">{{ prop.agent.user.name[0].upper() if prop.agent else 'A' }}</div>
+            <span>{{ prop.agent.user.name if prop.agent else 'Agent' }}</span>
+          </div>
+          <span class="prop-date">{{ prop.created_at.strftime('%d %b %Y') }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state animate-fade-up">
+      <i class="fa-solid fa-building"></i>
+      <h3>No listings yet</h3>
+      <p>Be the first to list a property!</p>
+      <a href="{{ url_for('auth.register') }}" class="btn btn-primary mt-16">List Now</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- ══════════════════ TOP AGENTS ══════════════════ -->
+<section class="section section-dark">
+  <div class="container">
+    <div class="section-header text-center animate-fade-up">
+      <div class="section-eyebrow">Our Team</div>
+      <h2 class="section-title">Expert Agents</h2>
+      <p class="section-subtitle">Work with certified professionals who know the market inside out</p>
+    </div>
+    {% if top_agents %}
+    <div class="agent-grid animate-fade-up">
+      {% for agent in top_agents %}
+      <div class="agent-card">
+        <div class="agent-avatar">{{ agent.user.name[0].upper() }}</div>
+        <h3 class="agent-name">{{ agent.user.name }}</h3>
+        <p class="agent-agency">{{ agent.agent_profile.agency_name if agent.agent_profile else 'PrimeKey Estates' }}</p>
+        <div class="agent-rating">
+          {% set rating = agent.agent_profile.rating|float if agent.agent_profile else 0 %}
+          {% for i in range(5) %}
+            <i class="fa-{{ 'solid' if i < rating|int else 'regular' }} fa-star" style="color:var(--gold);font-size:0.9rem;"></i>
+          {% endfor %}
+          <span style="color:var(--text-muted);font-size:0.8rem;margin-left:4px;">({{ '%.1f'|format(rating) }})</span>
+        </div>
+        <div class="agent-stats">
+          <div><strong>{{ agent.agent_profile.total_deals if agent.agent_profile else 0 }}</strong><span>Deals</span></div>
+          <div><strong>{{ agent.properties|length }}</strong><span>Listings</span></div>
+          <div><strong>{{ agent.agent_profile.experience_years if agent.agent_profile else 0 }}y</strong><span>Exp.</span></div>
+        </div>
+        <a href="{{ url_for('public.agent_detail', agent_id=agent.id) }}" class="btn btn-outline btn-sm btn-block">View Profile</a>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state animate-fade-up"><i class="fa-solid fa-user-tie"></i><h3>No agents listed yet</h3></div>
+    {% endif %}
+    <div class="text-center mt-32 animate-fade-up">
+      <a href="{{ url_for('public.agents_list') }}" class="btn btn-outline btn-lg">View All Agents <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ TESTIMONIALS ══════════════════ -->
+<section class="section">
+  <div class="container">
+    <div class="section-header text-center animate-fade-up">
+      <div class="section-eyebrow">Client Stories</div>
+      <h2 class="section-title">What Our Clients Say</h2>
+    </div>
+    <div class="testimonials-grid animate-fade-up">
+      {% set dummy = [
+        {'name':'Ahmed Raza','city':'Lahore','text':'PrimeKey made finding my dream home in DHA so simple. The agent was professional and the whole process was smooth from inquiry to keys.','rating':5},
+        {'name':'Fatima Khan','city':'Karachi','text':'I listed my commercial shop and got genuine inquiries within days. The admin panel is very easy to manage too. Highly recommended!','rating':5},
+        {'name':'Bilal Chaudhry','city':'Islamabad','text':'Great platform for investors! The installment plan feature and deal tracking helped me close three properties in one quarter.','rating':4}
+      ] %}
+      {% set items = testimonials if testimonials else dummy %}
+      {% for t in items %}
+      <div class="testimonial-card">
+        <div class="testimonial-stars">
+          {% set r = t.rating if t is mapping else 5 %}
+          {% for i in range(r) %}<i class="fa-solid fa-star" style="color:var(--gold);"></i>{% endfor %}
+        </div>
+        <p class="testimonial-text">"{{ t.text if t is mapping else t['text'] }}"</p>
+        <div class="testimonial-author">
+<div class="testimonial-avatar">{{ ((t.name if t is not mapping else t['name']) or '?')[0]|upper }}</div>
+          <div>
+            <div class="testimonial-name">{{ t.reviewer_name if t is not mapping else t['name'] }}</div>
+            <div class="testimonial-city"><i class="fa-solid fa-location-dot" style="font-size:0.75rem;"></i> {{ t.city if t is mapping else t['city'] }}</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ LATEST BLOG ══════════════════ -->
+{% if latest_blogs %}
+<section class="section section-dark">
+  <div class="container">
+    <div class="section-header d-flex justify-between align-center animate-fade-up" style="flex-wrap:wrap;gap:12px;">
+      <div>
+        <div class="section-eyebrow">News & Tips</div>
+        <h2 class="section-title" style="margin-bottom:0;">Latest from Our Blog</h2>
+      </div>
+      <a href="{{ url_for('public.blog_list') }}" class="btn btn-outline">All Posts <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+    <div class="blog-grid animate-fade-up">
+      {% for post in latest_blogs %}
+      <div class="blog-card">
+        {% if post.cover_image %}
+          <div class="blog-img-wrap"><img src="{{ url_for('static', filename='images/uploads/' + post.cover_image) }}" alt="{{ post.title }}" loading="lazy"></div>
+        {% else %}
+          <div class="blog-img-placeholder" style="background:linear-gradient(135deg,#1a1a2e,#b8912e);"></div>
+        {% endif %}
+        <div class="blog-body">
+          <div class="blog-meta">
+            <span><i class="fa-regular fa-calendar"></i> {{ post.created_at.strftime('%d %b %Y') }}</span>
+            <span class="badge badge-gold">{{ post.category }}</span>
+          </div>
+          <h3 class="blog-title"><a href="{{ url_for('public.blog_detail', slug=post.slug) }}">{{ post.title }}</a></h3>
+          <p class="blog-excerpt">{{ post.excerpt or post.content[:120] }}...</p>
+          <a href="{{ url_for('public.blog_detail', slug=post.slug) }}" class="btn btn-ghost btn-sm">Read More <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ══════════════════ NEWSLETTER ══════════════════ -->
+<section class="newsletter-banner">
+  <div class="container">
+    <div class="newsletter-content animate-fade-up">
+      <div class="newsletter-icon"><i class="fa-solid fa-envelope-open-text"></i></div>
+      <h2>Stay Updated</h2>
+      <p>Get the latest property listings, market trends and real estate tips delivered to your inbox.</p>
+      <form action="{{ url_for('public.subscribe') }}" method="POST" class="newsletter-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="email" name="email" placeholder="Enter your email address..." class="newsletter-input" required>
+        <button type="submit" class="btn btn-primary">Subscribe</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

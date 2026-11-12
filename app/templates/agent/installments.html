@@ -1,0 +1,36 @@
+{% extends 'agent/base_agent.html' %}
+{% block title %}Installment Plans{% endblock %}
+{% block content %}
+<div class="">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Installment plans</h2>
+    <a href="{{ url_for('agent.deals') }}" class="btn btn-outline">Go to deals</a>
+  </div>
+  {% if plans %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Deal</th><th>Total</th><th>Down payment</th><th>Installments</th><th>Frequency</th><th>Start</th></tr>
+      </thead>
+      <tbody>
+        {% for p in plans %}
+        <tr>
+          <td>#{{ p.deal_id }}</td>
+          <td>PKR {{ '{:,.0f}'.format(p.total_amount) }}</td>
+          <td>PKR {{ '{:,.0f}'.format(p.down_payment or 0) }}</td>
+          <td>{{ p.installments_count }}</td>
+          <td>{{ p.frequency }}</td>
+          <td>{{ p.start_date.strftime('%d %b %Y') if p.start_date else '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-center text-muted py-5">
+    <p class="fs-5 mb-1">No installment plans yet</p>
+    <p class="mb-0">Open a deal and choose "Installment plan" to set one up.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

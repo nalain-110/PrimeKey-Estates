@@ -1,0 +1,200 @@
+{% extends 'agent/base_agent.html' %}
+{% block title %}{{ 'Edit' if prop else 'Add' }} Listing — PrimeKey Estates{% endblock %}
+
+{% macro err(field) %}{% if field.errors %}<div class="error-msg">{{ field.errors[0] }}</div>{% endif %}{% endmacro %}
+
+{% block content %}
+<div class="dash-header">
+  <h1 class="dash-title">{{ 'Edit Listing' if prop else 'Add New Listing' }}</h1>
+  <p class="dash-subtitle">Fill in the details below to {{ 'update' if prop else 'create' }} your property listing.</p>
+</div>
+
+<div class="card" style="max-width:900px;">
+  <div class="card-body" style="padding:36px;">
+    <form method="POST" enctype="multipart/form-data"
+          action="{{ url_for('agent.edit_listing', prop_id=prop.id) if prop else url_for('agent.add_listing') }}">
+      {{ form.hidden_tag() }}
+
+      <!-- Basic Info -->
+      <div class="form-section-title">Basic Information</div>
+      <div class="grid grid-2 gap-16 mb-16">
+        <div class="form-group col-span-2">
+          <label class="form-label">Property Title *</label>
+          {{ form.title(class='form-control', placeholder='e.g. 10 Marla House in DHA Phase 5') }}
+          {{ err(form.title) }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Property Type *</label>
+          {{ form.type_id(class='form-select') }}
+          {{ err(form.type_id) }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Listing Type *</label>
+          {{ form.listing_type(class='form-select') }}
+          {{ err(form.listing_type) }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Price (PKR) *</label>
+          {{ form.price(class='form-control', placeholder='e.g. 15000000') }}
+          {{ err(form.price) }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          {{ form.status(class='form-select') }}
+          {{ err(form.status) }}
+        </div>
+      </div>
+
+      <!-- Location -->
+      <div class="form-section-title mt-24">Location</div>
+      <div class="grid grid-2 gap-16 mb-16">
+        <div class="form-group">
+          <label class="form-label">City *</label>
+          {{ form.city_id(class='form-select') }}
+          {{ err(form.city_id) }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Area / Sector</label>
+          {{ form.area_id(class='form-select') }}
+          {{ err(form.area_id) }}
+        </div>
+        <div class="form-group col-span-2">
+          <label class="form-label">Full Address</label>
+          {{ form.address(class='form-control', placeholder='e.g. House 14, Street 7, DHA Phase 5') }}
+          {{ err(form.address) }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Map Latitude (optional)</label>
+          {{ form.map_lat(class='form-control', placeholder='e.g. 31.5204') }}
+          {{ err(form.map_lat) }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Map Longitude (optional)</label>
+          {{ form.map_lng(class='form-control', placeholder='e.g. 74.3587') }}
+          {{ err(form.map_lng) }}
+        </div>
+      </div>
+
+      <!-- Specs -->
+      <div class="form-section-title mt-24">Property Specifications</div>
+      <div class="grid mb-16" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;">
+        <div class="form-group">
+          <label class="form-label">Size *</label>
+          {{ form.size(class='form-control', placeholder='e.g. 10') }}
+          {{ err(form.size) }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Size Unit</label>
+          {{ form.size_unit(class='form-select') }}
+          {{ err(form.size_unit) }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bedrooms</label>
+          {{ form.bedrooms(class='form-control', placeholder='e.g. 4') }}
+          {{ err(form.bedrooms) }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bathrooms</label>
+          {{ form.bathrooms(class='form-control', placeholder='e.g. 3') }}
+          {{ err(form.bathrooms) }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Floors</label>
+          {{ form.floors(class='form-control', placeholder='e.g. 2') }}
+          {{ err(form.floors) }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Year Built</label>
+          {{ form.year_built(class='form-control', placeholder='e.g. 2020') }}
+          {{ err(form.year_built) }}
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="form-section-title mt-24">Description</div>
+      <div class="form-group mb-16">
+        {{ form.description(class='form-control', rows=5, placeholder='Describe the property in detail...') }}
+        {{ err(form.description) }}
+      </div>
+
+      <!-- Images -->
+      <div class="form-section-title mt-24">Property Images</div>
+      <div class="file-upload-area mb-16" id="imageUploadArea" style="cursor:pointer;">
+        <i class="fa-solid fa-cloud-arrow-up" style="font-size:2.5rem;color:var(--gold);margin-bottom:12px;"></i>
+        <div style="font-weight:600;color:var(--text-primary);">Drop images here or click to upload</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-top:6px;">JPG, PNG, WEBP — max 5MB each. Multiple allowed.</div>
+        <input type="file" name="images" id="imageInput" multiple accept="image/*" style="display:none;">
+      </div>
+      <div id="imagePreview" class="d-flex flex-wrap gap-10 mt-10 mb-16"></div>
+
+      <!-- Existing images (delete buttons use the form="" attribute, so no nested forms) -->
+      {% if prop and prop.images %}
+      <div class="d-flex flex-wrap gap-10 mb-16">
+        {% for img in prop.images %}
+        <div style="position:relative;">
+          <img src="{{ url_for('static', filename='images/uploads/' + img.image_url) }}" alt="Property image" style="width:100px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--border);">
+          <button type="submit" form="delete-image-{{ img.id }}" class="btn"
+                  onclick="return confirm('Remove this image?')"
+                  style="position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;background:var(--danger);color:#fff;font-size:0.65rem;padding:0;line-height:22px;text-align:center;">✕</button>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Flags -->
+      <div class="form-section-title mt-24">Options</div>
+      <div class="d-flex gap-24 mb-24 flex-wrap">
+        <label class="checkbox-label">{{ form.is_featured() }} Mark as Featured</label>
+        {% if session.get('user_role') == 1 %}
+        <label class="checkbox-label">{{ form.is_verified() }} Verified</label>
+        {% endif %}
+      </div>
+
+      <div class="d-flex gap-12">
+        <button type="submit" class="btn btn-primary btn-lg"><i class="fa-solid fa-{{ 'floppy-disk' if prop else 'plus' }}"></i> {{ 'Update Listing' if prop else 'Add Listing' }}</button>
+        <a href="{{ url_for('agent.listings') }}" class="btn btn-ghost btn-lg">Cancel</a>
+      </div>
+    </form>
+
+    <!-- Image delete forms (kept outside the main form) -->
+    {% if prop and prop.images %}
+      {% for img in prop.images %}
+      <form id="delete-image-{{ img.id }}" action="{{ url_for('agent.delete_image', img_id=img.id) }}" method="POST" style="display:none;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      </form>
+      {% endfor %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  var area = document.getElementById('imageUploadArea');
+  var input = document.getElementById('imageInput');
+  var preview = document.getElementById('imagePreview');
+  if (!area || !input) return;
+
+  area.addEventListener('click', function () { input.click(); });
+  area.addEventListener('dragover', function (e) { e.preventDefault(); });
+  area.addEventListener('drop', function (e) {
+    e.preventDefault();
+    if (e.dataTransfer && e.dataTransfer.files.length) {
+      input.files = e.dataTransfer.files;
+      input.dispatchEvent(new Event('change'));
+    }
+  });
+  input.addEventListener('change', function () {
+    preview.innerHTML = '';
+    Array.prototype.forEach.call(input.files, function (file) {
+      if (!file.type.startsWith('image/')) return;
+      var img = document.createElement('img');
+      img.src = URL.createObjectURL(file);
+      img.style.cssText = 'width:100px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--border);';
+      preview.appendChild(img);
+    });
+  });
+})();
+</script>
+{% endblock %}

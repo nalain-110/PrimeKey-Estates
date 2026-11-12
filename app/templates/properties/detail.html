@@ -1,0 +1,295 @@
+{% extends 'base.html' %}
+{% block title %}{{ prop.title }} — PrimeKey Estates{% endblock %}
+{% block meta_desc %}{{ prop.description[:160] if prop.description else prop.title + ' available in ' + (prop.location.city.name if prop.location.city else 'Pakistan') }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header" style="padding:20px 0;">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="{{ url_for('public.index') }}">Home</a>
+      <i class="fa-solid fa-chevron-right" style="font-size:0.65rem;"></i>
+      <a href="{{ url_for('public.properties') }}">Properties</a>
+      <i class="fa-solid fa-chevron-right" style="font-size:0.65rem;"></i>
+      <span>{{ prop.title[:40] }}{% if prop.title|length > 40 %}...{% endif %}</span>
+    </div>
+  </div>
+</div>
+
+<div class="container py-24">
+  <div class="d-flex gap-28" style="align-items:flex-start;">
+
+    <!-- ── LEFT: Main Content (65%) ─────────────────── -->
+    <div style="flex:2;min-width:0;">
+
+      <!-- Gallery -->
+      <div class="prop-gallery">
+        {% if prop.images %}
+          <div class="gallery-main">
+            <img src="{{ url_for('static', filename='images/uploads/' + prop.images[0].image_url) }}" alt="{{ prop.title }}" id="mainGalleryImg">
+            <div class="gallery-badges">
+              {% if prop.is_featured %}<span class="badge badge-gold">⭐ Featured</span>{% endif %}
+              {% if prop.is_verified %}<span class="badge badge-success"><i class="fa-solid fa-shield-halved"></i> Verified</span>{% endif %}
+            </div>
+          </div>
+          {% if prop.images|length > 1 %}
+          <div class="gallery-thumbs">
+            {% for img in prop.images[1:5] %}
+            <div class="gallery-thumb {% if loop.last and prop.images|length > 5 %}gallery-thumb-more{% endif %}"
+                 onclick="document.getElementById('mainGalleryImg').src='{{ url_for('static', filename='images/uploads/' + img.image_url) }}'">
+              <img src="{{ url_for('static', filename='images/uploads/' + img.image_url) }}" alt="Photo {{ loop.index + 1 }}">
+              {% if loop.last and prop.images|length > 5 %}
+                <div class="gallery-more">+{{ prop.images|length - 5 }} more</div>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        {% else %}
+          <div style="height:400px;background:linear-gradient(135deg,#0d1b2a,#b8912e);border-radius:16px;display:flex;align-items:center;justify-content:center;">
+            <i class="fa-solid fa-building" style="font-size:5rem;color:rgba(255,255,255,0.3);"></i>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Price & Status Bar -->
+      <div class="prop-detail-priceBar">
+        <div>
+          <div class="prop-detail-price">
+            PKR {% if prop.price >= 10000000 %}{{ '%.1f'|format(prop.price/10000000) }} Crore{% elif prop.price >= 100000 %}{{ '%.1f'|format(prop.price/100000) }} Lac{% else %}{{ '{:,.0f}'.format(prop.price) }}{% endif %}
+            {% if prop.listing_type == 'Rent' %}<span style="font-size:0.9rem;color:var(--text-secondary);">/month</span>{% endif %}
+          </div>
+          <div class="d-flex gap-8 mt-8">
+            <span class="badge badge-info">{{ prop.listing_type }}</span>
+            <span class="badge badge-warning">{{ prop.status }}</span>
+            {% if prop.property_type %}<span class="badge badge-gold">{{ prop.property_type.name }}</span>{% endif %}
+          </div>
+        </div>
+        <div class="d-flex gap-8 flex-wrap">
+          <!-- Share -->
+          <a href="https://wa.me/?text={{ (prop.title + ' — PKR ' + prop.price|string)|urlencode }}" target="_blank" class="btn btn-ghost btn-sm"><i class="fab fa-whatsapp"></i> Share</a>
+          <button onclick="navigator.clipboard.writeText(window.location.href).then(()=>alert('Link copied!'))" class="btn btn-ghost btn-sm"><i class="fa-solid fa-link"></i> Copy Link</button>
+        </div>
+      </div>
+
+      <!-- Info Grid -->
+      <div class="card mt-24">
+        <div class="card-header"><span style="font-weight:700;color:var(--text-primary);">Property Details</span></div>
+        <div class="card-body">
+          <div class="prop-info-grid">
+            {% if prop.size %}<div class="info-item"><i class="fa-solid fa-vector-square"></i><span>Area</span><strong>{{ prop.size }} {{ prop.size_unit }}</strong></div>{% endif %}
+            {% if prop.bedrooms %}<div class="info-item"><i class="fa-solid fa-bed"></i><span>Bedrooms</span><strong>{{ prop.bedrooms }}</strong></div>{% endif %}
+            {% if prop.bathrooms %}<div class="info-item"><i class="fa-solid fa-bath"></i><span>Bathrooms</span><strong>{{ prop.bathrooms }}</strong></div>{% endif %}
+            {% if prop.floors %}<div class="info-item"><i class="fa-solid fa-layer-group"></i><span>Floors</span><strong>{{ prop.floors }}</strong></div>{% endif %}
+            {% if prop.year_built %}<div class="info-item"><i class="fa-solid fa-calendar-days"></i><span>Year Built</span><strong>{{ prop.year_built }}</strong></div>{% endif %}
+            {% if prop.facing %}<div class="info-item"><i class="fa-solid fa-compass"></i><span>Facing</span><strong>{{ prop.facing }}</strong></div>{% endif %}
+            {% if prop.furnishing %}<div class="info-item"><i class="fa-solid fa-couch"></i><span>Furnishing</span><strong>{{ prop.furnishing }}</strong></div>{% endif %}
+            {% if prop.parking_spaces %}<div class="info-item"><i class="fa-solid fa-car"></i><span>Parking</span><strong>{{ prop.parking_spaces }} Cars</strong></div>{% endif %}
+            {% if prop.city %}<div class="info-item"><i class="fa-solid fa-city"></i><span>City</span><strong>{{ prop.location.city.name }}</strong></div>{% endif %}
+            {% if prop.area %}<div class="info-item"><i class="fa-solid fa-map"></i><span>Area/Sector</span><strong>{{ prop.location.area.name }}</strong></div>{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      {% if prop.description %}
+      <div class="card mt-24">
+        <div class="card-header"><span style="font-weight:700;color:var(--text-primary);">Description</span></div>
+        <div class="card-body">
+          <p style="color:var(--text-secondary);line-height:1.8;">{{ prop.description }}</p>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Features -->
+      {% if prop.features %}
+      <div class="card mt-24">
+        <div class="card-header"><span style="font-weight:700;color:var(--text-primary);">Features</span></div>
+        <div class="card-body">
+          <div class="features-grid">
+            {% for f in prop.features %}
+            <div class="feature-pill"><i class="fa-solid fa-check-circle" style="color:var(--gold);"></i> {{ f.feature_name }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Amenities -->
+      {% if prop.amenities %}
+      <div class="card mt-24">
+        <div class="card-header"><span style="font-weight:700;color:var(--text-primary);">Amenities</span></div>
+        <div class="card-body">
+          <div class="amenities-grid">
+            {% for a in prop.amenities %}
+            <div class="amenity-pill"><i class="fa-solid fa-star-of-life" style="color:var(--gold);font-size:0.6rem;"></i> {{ a.amenity_name }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Map placeholder -->
+      <div class="card mt-24">
+        <div class="card-header"><span style="font-weight:700;color:var(--text-primary);"><i class="fa-solid fa-map-location-dot"></i> Location</span></div>
+        <div class="card-body">
+          <div class="map-placeholder" style="background:linear-gradient(135deg,var(--bg-panel),var(--bg-dark));border-radius:12px;height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid var(--border);">
+            <i class="fa-solid fa-map-location-dot" style="font-size:3rem;color:var(--gold);margin-bottom:12px;"></i>
+            <div style="font-size:0.95rem;font-weight:600;color:var(--text-primary);">{{ prop.location.area.name if prop.location.area else '' }}{% if prop.area and prop.city %}, {% endif %}{{ prop.location.city.name if prop.location.city else '' }}</div>
+            {% if prop.address %}<div style="font-size:0.82rem;color:var(--text-muted);margin-top:6px;">{{ prop.address }}</div>{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Price History -->
+      {% if price_history %}
+      <div class="card mt-24">
+        <div class="card-header"><span style="font-weight:700;color:var(--text-primary);">Price History</span></div>
+        <div class="card-body" style="padding:0;">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Price (PKR)</th><th>Change</th></tr></thead>
+              <tbody>
+                {% for ph in price_history %}
+                <tr>
+                  <td>{{ ph.changed_at.strftime('%d %b %Y') }}</td>
+                  <td class="td-bold" style="color:var(--gold);">
+                    {% if ph.old_price >= 10000000 %}{{ '%.1f'|format(ph.old_price/10000000) }} Cr{% elif ph.old_price >= 100000 %}{{ '%.1f'|format(ph.old_price/100000) }} Lac{% else %}{{ '{:,.0f}'.format(ph.old_price) }}{% endif %}
+                  </td>
+                  <td>
+                    {% set diff = ph.new_price - ph.old_price %}
+                    <span style="color:{{ '#22c55e' if diff < 0 else '#ef4444' }};">
+                      <i class="fa-solid fa-arrow-{{ 'down' if diff < 0 else 'up' }}"></i>
+                      {% if diff|abs >= 100000 %}{{ '%.1f'|format(diff|abs/100000) }} Lac{% else %}{{ '{:,.0f}'.format(diff|abs) }}{% endif %}
+                    </span>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Related Properties -->
+      {% if related %}
+      <div class="mt-32">
+        <h3 style="font-size:1.2rem;font-weight:700;color:var(--text-primary);margin-bottom:20px;">Related Properties</h3>
+        <div class="prop-grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));">
+          {% for r in related %}
+          <div class="prop-card">
+            <div class="prop-img-wrap" style="height:160px;">
+              {% if r.images %}
+                <img src="{{ url_for('static', filename='images/uploads/' + r.images[0].image_url) }}" alt="{{ r.title }}" loading="lazy">
+              {% else %}
+                <div style="height:100%;background:linear-gradient(135deg,#0d1b2a,#b8912e);"></div>
+              {% endif %}
+            </div>
+            <div class="prop-body" style="padding:12px;">
+              <div class="prop-price" style="font-size:1rem;">PKR {% if r.price >= 10000000 %}{{ '%.1f'|format(r.price/10000000) }} Cr{% elif r.price >= 100000 %}{{ '%.1f'|format(r.price/100000) }} Lac{% else %}{{ '{:,.0f}'.format(r.price) }}{% endif %}</div>
+              <h4 class="prop-title" style="font-size:0.9rem;"><a href="{{ url_for('public.property_detail', prop_id=r.id) }}">{{ r.title[:40] }}</a></h4>
+              <div class="prop-location" style="font-size:0.78rem;"><i class="fa-solid fa-location-dot"></i> {{ r.city.name if r.city else '' }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- ── RIGHT: Sidebar (35%) ───────────────────── -->
+    <aside style="flex:1;min-width:280px;max-width:340px;position:sticky;top:90px;">
+
+      <!-- Price Action Card -->
+      <div class="card mb-20">
+        <div class="card-body" style="text-align:center;">
+          <div class="prop-detail-price" style="font-size:1.6rem;">
+            PKR {% if prop.price >= 10000000 %}{{ '%.1f'|format(prop.price/10000000) }} Cr{% elif prop.price >= 100000 %}{{ '%.1f'|format(prop.price/100000) }} Lac{% else %}{{ '{:,.0f}'.format(prop.price) }}{% endif %}
+            {% if prop.listing_type == 'Rent' %}<div style="font-size:0.8rem;color:var(--text-muted);font-weight:400;">/month</div>{% endif %}
+          </div>
+          <div class="d-flex flex-col gap-10 mt-16">
+            {% if session.get('user_id') %}
+              <a href="{{ url_for('client.make_offer', prop_id=prop.id) }}" class="btn btn-primary btn-block"><i class="fa-solid fa-tag"></i> Make an Offer</a>
+              <a href="{{ url_for('client.schedule_visit', prop_id=prop.id) }}" class="btn btn-outline btn-block"><i class="fa-solid fa-calendar-plus"></i> Schedule Visit</a>
+              <form action="{{ url_for('client.toggle_favorite', prop_id=prop.id) }}" method="POST">
+                {{ csrf_token() }}
+                <button type="submit" class="btn btn-ghost btn-block" style="width:100%;">
+                  <i class="fa-solid fa-heart"></i> Save to Favorites
+                </button>
+              </form>
+            {% else %}
+              <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-block"><i class="fa-solid fa-right-to-bracket"></i> Login to Make Offer</a>
+              <a href="{{ url_for('auth.register') }}" class="btn btn-outline btn-block">Create Free Account</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Agent Card -->
+      {% if prop.agent %}
+      <div class="card mb-20">
+        <div class="card-body">
+          <div class="text-center mb-16">
+            <div class="dash-avatar" style="margin:0 auto 10px;width:64px;height:64px;font-size:1.5rem;">{{ prop.agent.user.name[0].upper() }}</div>
+            <div style="font-weight:700;color:var(--text-primary);">{{ prop.agent.user.name }}</div>
+            {% if prop.agent.agent_profile %}
+              <div style="font-size:0.82rem;color:var(--text-muted);">{{ prop.agent.agent_profile.agency_name }}</div>
+              <div style="margin-top:6px;">
+                {% set r = prop.agent.agent_profile.rating|float %}
+                {% for i in range(5) %}<i class="fa-{{ 'solid' if i < r|int else 'regular' }} fa-star" style="color:var(--gold);font-size:0.8rem;"></i>{% endfor %}
+              </div>
+            {% endif %}
+          </div>
+          {% if prop.agent.phone %}
+          <a href="tel:{{ prop.agent.phone }}" class="btn btn-outline btn-block mb-8">
+            <i class="fa-solid fa-phone"></i> {{ prop.agent.phone }}
+          </a>
+          {% endif %}
+          <a href="https://wa.me/{{ prop.agent.phone|replace(' ','') }}" target="_blank" class="btn btn-ghost btn-block" style="border:1px solid rgba(37,211,102,0.4);color:#25D366;">
+            <i class="fab fa-whatsapp"></i> WhatsApp Agent
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick Inquiry Form -->
+      {% if session.get('user_id') %}
+      <div class="card mb-20">
+        <div class="card-header"><span style="font-weight:700;color:var(--text-primary);"><i class="fa-solid fa-message"></i> Send Inquiry</span></div>
+        <div class="card-body">
+          <form action="{{ url_for('client.send_inquiry', prop_id=prop.id) }}" method="POST">
+            {{ csrf_token() }}
+            <div class="form-group mb-12">
+              <textarea name="message" class="form-control" rows="4" placeholder="Hi, I'm interested in this property. Please provide more details..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-paper-plane"></i> Send Inquiry</button>
+          </form>
+        </div>
+      </div>
+      {% endif %}
+      {% endif %}
+
+      <!-- Property Info -->
+      <div class="card">
+        <div class="card-body">
+          <div class="price-row" style="border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:10px;"><span style="color:var(--text-muted);font-size:0.85rem;">Property ID</span><strong style="color:var(--gold);">#{{ prop.id }}</strong></div>
+          <div class="price-row" style="border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:10px;"><span style="color:var(--text-muted);font-size:0.85rem;">Listed On</span><strong style="font-size:0.85rem;">{{ prop.created_at.strftime('%d %b %Y') }}</strong></div>
+          <div class="price-row"><span style="color:var(--text-muted);font-size:0.85rem;">Views</span><strong>{{ prop.views_count }}</strong></div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Gallery thumbnail click
+document.querySelectorAll('.gallery-thumb img').forEach((img, i) => {
+  img.addEventListener('click', () => {
+    document.getElementById('mainGalleryImg').src = img.src;
+  });
+});
+</script>
+{% endblock %}

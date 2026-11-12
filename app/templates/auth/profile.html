@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Profile — PrimeKey Estates{% endblock %}
+
+{% block content %}
+<div class="container mx-auto py-24" style="max-width:1200px;">
+  <div class="grid grid-2" style="gap:32px;">
+    <!-- Left sidebar -->
+    <aside class="sidebar" style="background:var(--bg-card);padding:24px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07);">
+      <div class="text-center">
+        <div class="avatar" style="width:96px;height:96px;border-radius:50%;background:var(--gold);font-size:2.5rem;display:flex;align-items:center;justify-content:center; margin:auto; color:#fff;">{{ user.name[0]|upper }}</div>
+        <h2 class="mt-12" style="font-weight:600;color:var(--text-primary);">{{ user.name }}</h2>
+        <p class="text-muted" style="margin-top:4px;">{{ user.email }}</p>
+        <span class="badge badge-info" style="margin-top:8px;">{{ {1:'Admin', 2:'Agent', 3:'Client'}.get(user.role_id, 'User') }}</span>
+        <p class="mt-8" style="font-size:0.85rem;color:var(--text-muted);">Member since {{ user.created_at.strftime('%b %Y') if user.created_at else '—' }}</p>
+      </div>
+      <hr class="my-20" style="border-color:rgba(255,255,255,0.07);">
+      <div class="stats-list" style="display:flex;flex-direction:column;gap:12px;">
+        <div class="d-flex justify-between"><span>Favorites</span><strong>{{ fav_count }}</strong></div>
+        <div class="d-flex justify-between"><span>Inquiries</span><strong>{{ inquiry_count }}</strong></div>
+        <div class="d-flex justify-between"><span>Offers</span><strong>{{ offer_count }}</strong></div>
+        <div class="d-flex justify-between"><span>Deals</span><strong>{{ deal_count }}</strong></div>
+      </div>
+    </aside>
+
+    <!-- Right main panel -->
+    <section class="main-panel" style="background:var(--bg-card);padding:24px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07);">
+      <h3 class="section-title" style="font-weight:600;color:var(--text-primary);margin-bottom:16px;">Profile Details</h3>
+      <form method="POST" action="{{ url_for('auth.profile') }}" class="grid grid-2" style="gap:16px;">
+        {{ profile_form.hidden_tag() }}
+        <div class="form-group">
+          <label class="form-label" for="name"><i class="fa-solid fa-user"></i> Full Name</label>
+          {{ profile_form.name(class='form-control') }}
+          {% if profile_form.name.errors %}<div class="error-msg">{{ profile_form.name.errors[0] }}</div>{% endif %}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="email"><i class="fa-solid fa-envelope"></i> Email</label>
+          {{ profile_form.email(class='form-control') }}
+          {% if profile_form.email.errors %}<div class="error-msg">{{ profile_form.email.errors[0] }}</div>{% endif %}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="phone"><i class="fa-solid fa-phone"></i> Phone</label>
+          {{ profile_form.phone(class='form-control') }}
+          {% if profile_form.phone.errors %}<div class="error-msg">{{ profile_form.phone.errors[0] }}</div>{% endif %}
+        </div>
+        {% if session.get('user_role') == 2 %}
+        <div class="form-group">
+          <label class="form-label" for="agency_name"><i class="fa-solid fa-building"></i> Agency Name</label>
+          {{ profile_form.agency_name(class='form-control') }}
+          {% if profile_form.agency_name.errors %}<div class="error-msg">{{ profile_form.agency_name.errors[0] }}</div>{% endif %}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="license_no"><i class="fa-solid fa-id-card"></i> License No.</label>
+          {{ profile_form.license_no(class='form-control') }}
+          {% if profile_form.license_no.errors %}<div class="error-msg">{{ profile_form.license_no.errors[0] }}</div>{% endif %}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="experience_years"><i class="fa-solid fa-calendar-days"></i> Experience (years)</label>
+          {{ profile_form.experience_years(class='form-control', min=0, max=80) }}
+          {% if profile_form.experience_years.errors %}<div class="error-msg">{{ profile_form.experience_years.errors[0] }}</div>{% endif %}
+        </div>
+        {% endif %}
+        <div class="col-span-2 text-right mt-12">
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+
+      {% if session.get('user_role') == 2 %}
+      <hr class="my-24" style="border-color:rgba(255,255,255,0.07);">
+      <h3 class="section-title" style="font-weight:600;color:var(--text-primary);margin-bottom:16px;">Agent Stats</h3>
+      <div class="grid grid-3" style="gap:16px;">
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-list"></i></div>
+          <div>
+            <div class="stat-value">{{ listings_count }}</div>
+            <div class="stat-label">Active Listings</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-handshake"></i></div>
+          <div>
+            <div class="stat-value">{{ deals_count }}</div>
+            <div class="stat-label">Closed Deals</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-star"></i></div>
+          <div>
+            <div class="stat-value">{{ rating|round(1) }}/5</div>
+            <div class="stat-label">Rating</div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}

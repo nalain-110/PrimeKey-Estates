@@ -1,0 +1,21 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Add User{% endblock %}
+{% block content %}
+<div class="" style="max-width:600px">
+  <h2 class="mb-3">Add user</h2>
+  <form method="POST">{% if csrf_token is defined %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+    <div class="mb-3"><label class="form-label">Name</label><input name="name" class="form-control" required></div>
+    <div class="mb-3"><label class="form-label">Email</label><input type="email" name="email" class="form-control" required></div>
+    <div class="mb-3"><label class="form-label">Phone</label><input name="phone" class="form-control"></div>
+    <div class="mb-3">
+      <label class="form-label">Role</label>
+      <select name="role_id" class="form-select">
+        {% for r in roles %}<option value="{{ r.id }}" {{ 'selected' if r.id == 3 }}>{{ r.name }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="mb-3"><label class="form-label">Password</label><input type="password" name="password" class="form-control" required></div>
+    <button class="btn btn-primary">Add user</button>
+    <a href="{{ url_for('admin.users') }}" class="btn btn-link">Cancel</a>
+  </form>
+</div>
+{% endblock %}

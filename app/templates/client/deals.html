@@ -1,0 +1,33 @@
+{% extends 'client/base_client.html' %}
+{% block title %}My Deals{% endblock %}
+{% block content %}
+<div class="">
+  <h2 class="mb-3">My deals</h2>
+  {% if deals %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Property</th><th>Type</th><th>Price</th><th>Date</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for d in deals %}
+        <tr>
+          <td>{{ d.property.title if d.property else '—' }}</td>
+          <td>{{ d.deal_type }}</td>
+          <td>PKR {{ '{:,.0f}'.format(d.deal_price) }}</td>
+          <td>{{ d.deal_date.strftime('%d %b %Y') if d.deal_date else '—' }}</td>
+          <td><span class="badge badge-{{ 'success' if d.status == 'Completed' else 'warning' }}">{{ d.status }}</span></td>
+          <td class="text-end"><a href="{{ url_for('client.deal_detail', deal_id=d.id) }}" class="btn btn-sm btn-outline">View</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-center text-muted py-5">
+    <p class="fs-5 mb-1">No deals yet</p>
+    <p class="mb-0">Deals appear here once an agent confirms your purchase or rental.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

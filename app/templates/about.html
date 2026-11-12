@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block title %}About Us — PrimeKey Estates{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h1>About PrimeKey Estates</h1>
+    <div class="breadcrumb">
+      <a href="{{ url_for('public.index') }}">Home</a>
+      <i class="fa-solid fa-chevron-right" style="font-size:0.65rem;"></i>
+      <span>About</span>
+    </div>
+  </div>
+</div>
+
+<!-- Mission -->
+<section class="section">
+  <div class="container">
+    <div class="grid grid-2 gap-40 align-center">
+      <div class="animate-fade-up">
+        <div class="section-eyebrow">Who We Are</div>
+        <h2 style="font-family:'Playfair Display',serif;font-size:2.4rem;font-weight:900;color:var(--text-primary);line-height:1.3;">
+          Pakistan's Most Trusted<br><span class="text-gradient">Real Estate Platform</span>
+        </h2>
+        <p style="color:var(--text-secondary);line-height:1.9;margin-top:16px;margin-bottom:20px;">
+          PrimeKey Estates was founded with a single vision — to make buying, selling and renting properties in Pakistan transparent, efficient and stress-free. We connect genuine buyers with verified sellers through a network of professional, licensed agents.
+        </p>
+        <p style="color:var(--text-secondary);line-height:1.9;margin-bottom:28px;">
+          From houses and flats to commercial plots and shops, our comprehensive platform serves every real estate need under one roof. With advanced search, deal tracking, installment plans and digital token receipts, we bring the entire property journey online.
+        </p>
+        <div class="d-flex gap-12 flex-wrap">
+          <a href="{{ url_for('public.properties') }}" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Browse Properties</a>
+          <a href="{{ url_for('public.contact') }}" class="btn btn-outline">Contact Us</a>
+        </div>
+      </div>
+      <div class="animate-fade-up" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="stat-card"><div class="stat-icon gold"><i class="fa-solid fa-building"></i></div><div><div class="stat-value" data-count="{{ total_props }}" data-suffix="+">0</div><div class="stat-label">Properties</div></div></div>
+        <div class="stat-card"><div class="stat-icon blue"><i class="fa-solid fa-user-tie"></i></div><div><div class="stat-value" data-count="{{ total_agents }}" data-suffix="+">0</div><div class="stat-label">Agents</div></div></div>
+        <div class="stat-card"><div class="stat-icon green"><i class="fa-solid fa-handshake"></i></div><div><div class="stat-value" data-count="{{ total_deals }}" data-suffix="+">0</div><div class="stat-label">Deals Closed</div></div></div>
+        <div class="stat-card"><div class="stat-icon orange"><i class="fa-solid fa-map-location-dot"></i></div><div><div class="stat-value" data-count="{{ total_cities }}" data-suffix="+">0</div><div class="stat-label">Cities</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Values -->
+<section class="section section-dark">
+  <div class="container">
+    <div class="section-header text-center mb-40 animate-fade-up">
+      <div class="section-eyebrow">Our Values</div>
+      <h2 class="section-title">What Sets Us Apart</h2>
+    </div>
+    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:24px;">
+      {% set values = [
+        ('fa-shield-halved','gold','Verified Listings','Every property is manually reviewed for authenticity before going live.'),
+        ('fa-user-tie','blue','Expert Agents','Our agents are licensed, trained and committed to your satisfaction.'),
+        ('fa-bolt','green','Fast Process','From inquiry to deal closure — we streamline every step.'),
+        ('fa-headset','orange','24/7 Support','Our team is available round the clock to assist you.'),
+        ('fa-file-contract','purple','Legal Assistance','We help with documentation, agreements and verifications.'),
+        ('fa-chart-line','teal','Market Insights','Data-driven reports to help you make smarter decisions.')
+      ] %}
+      {% for icon, color, title, text in values %}
+      <div class="card animate-fade-up" style="text-align:center;padding:28px;">
+        <div class="stat-icon {{ color }}" style="margin:0 auto 16px;width:56px;height:56px;border-radius:16px;"><i class="fa-solid {{ icon }}"></i></div>
+        <h3 style="font-weight:700;color:var(--text-primary);margin-bottom:8px;">{{ title }}</h3>
+        <p style="font-size:0.875rem;color:var(--text-secondary);line-height:1.7;">{{ text }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Team / Top Agents Showcase -->
+{% if top_agents %}
+<section class="section">
+  <div class="container">
+    <div class="section-header text-center mb-40 animate-fade-up">
+      <div class="section-eyebrow">Our Team</div>
+      <h2 class="section-title">Meet the Experts</h2>
+    </div>
+    <div class="agent-grid animate-fade-up">
+      {% for agent in top_agents %}
+      <div class="agent-card">
+        <div class="agent-avatar">{{ agent.user.name[0].upper() }}</div>
+        <h3 class="agent-name">{{ agent.user.name }}</h3>
+        <p class="agent-agency">{{ agent.agent_profile.agency_name if agent.agent_profile else 'PrimeKey Estates' }}</p>
+        <div class="agent-stats">
+          <div><strong>{{ agent.properties|length }}</strong><span>Listings</span></div>
+          <div><strong>{{ agent.agent_profile.total_deals if agent.agent_profile else 0 }}</strong><span>Deals</span></div>
+        </div>
+        <a href="{{ url_for('public.agent_detail', agent_id=agent.id) }}" class="btn btn-outline btn-sm btn-block">View Profile</a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

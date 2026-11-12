@@ -1,0 +1,20 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<div class="" style="max-width:700px">
+  <h2 class="mb-3">Site settings</h2>
+  {% if settings %}
+  <form method="POST">{% if csrf_token is defined %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+    {% for s in settings %}
+    <div class="mb-3">
+      <label class="form-label">{{ s.key or s.name or ('Setting ' ~ s.id) }}</label>
+      <input name="setting_{{ s.id }}" class="form-control" value="{{ s.value or '' }}">
+    </div>
+    {% endfor %}
+    <button class="btn btn-primary">Save settings</button>
+  </form>
+  {% else %}
+  <div class="text-center text-muted py-5"><p class="fs-5 mb-1">No settings defined yet</p></div>
+  {% endif %}
+</div>
+{% endblock %}
