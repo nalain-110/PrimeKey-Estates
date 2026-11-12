@@ -12,7 +12,7 @@
   - [Technology Stack](#technology-stack)
   - [Installation \& Setup](#installation--setup)
   - [Running the Application](#running-the-application)
-    - [Default Accounts (Seeded)](#default-accounts-seeded)
+  - [Default Accounts (Seeded)](#default-accounts-seeded)
   - [Database](#database)
   - [Testing](#testing)
   - [Project Structure](#project-structure)
@@ -190,5 +190,4 @@ This project is released under the **MIT License** – see the `LICENSE` file fo
 
 ---
 
-*Happy coding!* 🎉
 
