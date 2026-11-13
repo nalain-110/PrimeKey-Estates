@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Register — PrimeKey Estates{% endblock %}
+
+{% block content %}
+<div class="grid grid-2" style="min-height:85vh;">
+  <!-- Left decorative panel -->
+  <div class="auth-panel d-flex flex-col justify-center align-center" style="background:linear-gradient(135deg, var(--gold), var(--bg-dark));color:#fff;padding:48px;">
+    <div class="logo-icon" style="font-size:4rem;">🏠</div>
+    <h1 style="font-family:'Playfair Display',serif;font-weight:900;font-size:2.2rem;margin-top:12px;">Join PrimeKey</h1>
+    <p style="margin-top:8px;font-size:1rem;max-width:300px;text-align:center;opacity:0.9;">Join thousands of satisfied clients discovering their dream homes.</p>
+    <div class="feature-pills" style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+      <span class="badge badge-gold"><i class="fa-solid fa-check-circle"></i> Verified Listings</span>
+      <span class="badge badge-gold"><i class="fa-solid fa-user-tie"></i> Trusted Agents</span>
+      <span class="badge badge-gold"><i class="fa-solid fa-shield-halved"></i> Secure Deals</span>
+    </div>
+  </div>
+
+  <!-- Right register form -->
+  <div class="d-flex flex-col justify-center align-center" style="padding:48px;">
+    <div class="card" style="width:100%;max-width:460px;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+      <div class="card-body" style="padding:32px;">
+        <div class="text-center mb-24">
+          <div class="logo-icon" style="font-size:3rem;">🏠</div>
+          <h2 class="mt-12" style="font-family:'Playfair Display',serif;font-weight:700;">Create Account</h2>
+        </div>
+        <form method="POST" action="{{ url_for('auth.register') }}" novalidate>
+          {{ register_form.hidden_tag() }}
+          <div class="form-group mb-20">
+            <label class="form-label" for="name"><i class="fa-solid fa-user"></i> Full Name</label>
+            {{ register_form.name(class="form-control", placeholder="John Doe") }}
+            {% if register_form.name.errors %}<div class="error-msg">{{ register_form.name.errors[0] }}</div>{% endif %}
+          </div>
+          <div class="form-group mb-20">
+            <label class="form-label" for="email"><i class="fa-solid fa-envelope"></i> Email</label>
+            {{ register_form.email(class="form-control", placeholder="you@example.com") }}
+            {% if register_form.email.errors %}<div class="error-msg">{{ register_form.email.errors[0] }}</div>{% endif %}
+          </div>
+          <div class="form-group mb-20">
+            <label class="form-label" for="phone"><i class="fa-solid fa-phone"></i> Phone</label>
+            {{ register_form.phone(class="form-control", placeholder="+92 300 1234567") }}
+            {% if register_form.phone.errors %}<div class="error-msg">{{ register_form.phone.errors[0] }}</div>{% endif %}
+          </div>
+          <div class="form-group mb-20">
+            <label class="form-label" for="role"><i class="fa-solid fa-id-badge"></i> Register As</label>
+            {{ register_form.role(class="form-select") }}
+            {% if register_form.role.errors %}<div class="error-msg">{{ register_form.role.errors[0] }}</div>{% endif %}
+          </div>
+          <div class="form-group mb-20">
+            <label class="form-label" for="password"><i class="fa-solid fa-lock"></i> Password</label>
+            {{ register_form.password(class="form-control", placeholder="••••••••") }}
+            {% if register_form.password.errors %}<div class="error-msg">{{ register_form.password.errors[0] }}</div>{% endif %}
+          </div>
+          <div class="form-group mb-20">
+            <label class="form-label" for="confirm_password"><i class="fa-solid fa-lock"></i> Confirm Password</label>
+            {{ register_form.confirm_password(class="form-control", placeholder="••••••••") }}
+            {% if register_form.confirm_password.errors %}<div class="error-msg">{{ register_form.confirm_password.errors[0] }}</div>{% endif %}
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+          <div class="text-center mt-16">
+            <span class="small text-muted">Already have an account?</span>
+            <a href="{{ url_for('auth.login') }}" class="link-primary">Login here</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
