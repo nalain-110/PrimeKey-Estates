@@ -1,0 +1,42 @@
+{% extends 'client/base_client.html' %}
+{% block title %}Favorites{% endblock %}
+{% block content %}
+<div class="">
+  <h2 class="mb-3">Saved properties</h2>
+  {% if favs %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Property</th><th>Price</th><th>Status</th><th>Saved</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for f in favs %}
+        <tr>
+          <td>{{ f.property.title if f.property else 'Property removed' }}</td>
+          <td>{% if f.property %}PKR {{ '{:,.0f}'.format(f.property.price) }}{% else %}—{% endif %}</td>
+          <td>{{ f.property.status if f.property else '—' }}</td>
+          <td>{{ f.saved_at.strftime('%d %b %Y') if f.saved_at else '—' }}</td>
+          <td class="text-end">
+            {% if f.property %}
+            <a href="{{ url_for('client.send_inquiry', prop_id=f.property.id) }}" class="btn btn-sm btn-outline">Inquire</a>
+            <a href="{{ url_for('client.make_offer', prop_id=f.property.id) }}" class="btn btn-sm btn-success">Make offer</a>
+            <a href="{{ url_for('client.schedule_visit', prop_id=f.property.id) }}" class="btn btn-sm btn-ghost">Book visit</a>
+            {% endif %}
+            <form method="POST" action="{{ url_for('client.remove_favorite', fav_id=f.id) }}" class="d-inline">
+              {% if csrf_token is defined %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+              <button class="btn btn-sm btn-danger">Remove</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-center text-muted py-5">
+    <p class="fs-5 mb-1">No saved properties yet</p>
+    <p class="mb-0">Save a property while browsing and it will appear here.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

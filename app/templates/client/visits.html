@@ -1,0 +1,35 @@
+{% extends 'client/base_client.html' %}
+{% block title %}My Site Visits{% endblock %}
+{% block content %}
+<div class="">
+  <h2 class="mb-3">My site visits</h2>
+  {% if visits %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Property</th><th>Date</th><th>Notes</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for v in visits %}
+        <tr>
+          <td>{{ v.property.title if v.property else '—' }}</td>
+          <td>{{ v.scheduled_date.strftime('%d %b %Y, %I:%M %p') if v.scheduled_date else '—' }}</td>
+          <td>{{ v.notes or '—' }}</td>
+          <td>
+            {% if v.status == 'Completed' %}<span class="badge badge-success">Completed</span>
+            {% elif v.status == 'Cancelled' %}<span class="badge badge-danger">Cancelled</span>
+            {% else %}<span class="badge badge-warning">{{ v.status or 'Scheduled' }}</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-center text-muted py-5">
+    <p class="fs-5 mb-1">No site visits yet</p>
+    <p class="mb-0">Open a property and book a visit with the agent.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

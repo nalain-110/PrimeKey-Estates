@@ -1,0 +1,95 @@
+{% extends 'client/base_client.html' %}
+{% block title %}Client Dashboard — PrimeKey Estates{% endblock %}
+
+{% block content %}
+<header class="client-topbar">
+  <button class="client-menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
+  <div class="client-breadcrumb"><span>My account</span><i class="fa-solid fa-chevron-right"></i><strong>Overview</strong></div>
+  <div class="client-top-actions">
+    <a class="client-top-icon" href="{{ url_for('client.notifications') }}" aria-label="Notifications"><i class="fa-regular fa-bell"></i>{% if unread_count %}<span class="client-notification-dot"></span>{% endif %}</a>
+    <a href="{{ url_for('auth.profile') }}" class="client-top-user"><span class="client-avatar">{{ (user.name if user.name is defined and user.name else user.username if user.username is defined and user.username else 'U')[0].upper() }}</span><span>{{ user.name if user.name is defined else user.username if user.username is defined else 'My account' }}<small>Client account</small></span></a>
+  </div>
+</header>
+
+<section class="client-welcome">
+  <div><span class="client-eyebrow"><i class="fa-solid fa-sparkles"></i> PRIMEKEY ESTATES</span>
+    <h1>Welcome back, <em>{{ user.name.split(' ')[0] if user.name is defined and user.name else user.username if user.username is defined else 'there' }}</em></h1>
+    <p>Your property journey, all in one place.</p>
+  </div>
+  <a href="{{ url_for('public.properties') }}" class="client-primary-btn"><i class="fa-solid fa-magnifying-glass"></i> Explore properties</a>
+</section>
+
+<section class="client-stats" aria-label="Account summary">
+  <a href="{{ url_for('client.favorites') }}" class="client-stat-card"><span class="client-stat-icon"><i class="fa-solid fa-heart"></i></span><span><small>Saved properties</small><strong>{{ fav_count }}</strong></span><i class="fa-solid fa-arrow-up-right-from-square client-stat-open"></i></a>
+  <a href="{{ url_for('client.deals') }}" class="client-stat-card"><span class="client-stat-icon"><i class="fa-solid fa-key"></i></span><span><small>Active bookings</small><strong>{{ active_booking_count }}</strong></span><i class="fa-solid fa-arrow-up-right-from-square client-stat-open"></i></a>
+  <a href="{{ url_for('client.inquiries') }}" class="client-stat-card"><span class="client-stat-icon"><i class="fa-regular fa-message"></i></span><span><small>Pending inquiries</small><strong>{{ inq_count }}</strong></span><i class="fa-solid fa-arrow-up-right-from-square client-stat-open"></i></a>
+  <a href="#upcoming-payments" class="client-stat-card"><span class="client-stat-icon"><i class="fa-regular fa-calendar-check"></i></span><span><small>Upcoming payments</small><strong>{{ upcoming_payment_count }}</strong></span><i class="fa-solid fa-arrow-up-right-from-square client-stat-open"></i></a>
+</section>
+
+<section class="client-main-grid">
+  <article class="client-panel client-bookings-panel">
+    <div class="client-panel-heading"><div><span class="client-section-kicker">YOUR ACTIVITY</span><h2>Recent bookings</h2></div><a class="client-text-link" href="{{ url_for('client.deals') }}">All bookings <i class="fa-solid fa-arrow-right"></i></a></div>
+    {% if recent_deals %}
+    <div class="client-table-wrap"><table class="client-table"><thead><tr><th>Property</th><th>Date</th><th>Status</th><th>Amount</th></tr></thead><tbody>
+      {% for deal in recent_deals %}
+      <tr>
+        <td><a class="client-booking-property" href="{{ url_for('client.deal_detail', deal_id=deal.id) }}"><span class="client-booking-thumb">{% if deal.property and deal.property.images %}<img src="{{ url_for('static', filename='images/uploads/' + deal.property.images[0].image_url) }}" alt="">{% else %}<i class="fa-solid fa-house"></i>{% endif %}</span><span><strong>{{ deal.property.title if deal.property else 'Booking #' ~ deal.id }}</strong><small>{{ deal.deal_type or 'Property' }}</small></span></a></td>
+        <td>{{ deal.deal_date.strftime('%d %b %Y') if deal.deal_date else '—' }}</td>
+        <td><span class="client-status-pill {{ 'complete' if deal.status == 'Completed' else 'cancelled' if deal.status == 'Cancelled' else 'pending' }}"><i></i>{{ deal.status }}</span></td>
+        <td class="client-amount">PKR {{ '{:,.0f}'.format(deal.deal_price or 0) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody></table></div>
+    {% else %}
+    <div class="client-empty"><i class="fa-solid fa-house-circle-check"></i><strong>No bookings yet</strong><span>Your property bookings will appear here.</span><a class="client-text-link" href="{{ url_for('public.properties') }}">Browse properties <i class="fa-solid fa-arrow-right"></i></a></div>
+    {% endif %}
+  </article>
+
+  <article class="client-panel client-payments-panel" id="upcoming-payments">
+    <div class="client-panel-heading"><div><span class="client-section-kicker">STAY ON TRACK</span><h2>Upcoming payments</h2></div><i class="fa-solid fa-ellipsis client-more-icon"></i></div>
+    {% if upcoming_payments %}
+      {% for payment in upcoming_payments %}
+      <a class="client-payment-item" href="{{ url_for('client.deal_detail', deal_id=payment.plan.deal_id) }}">
+        <span class="client-payment-icon"><i class="fa-solid fa-receipt"></i></span>
+        <span class="client-payment-copy"><strong>{{ payment.plan.deal.property.title if payment.plan and payment.plan.deal and payment.plan.deal.property else 'Installment payment' }}</strong><small>Due {{ payment.due_date.strftime('%d %b %Y') if payment.due_date else '—' }}</small></span>
+        <b>PKR {{ '{:,.0f}'.format(payment.amount or 0) }}</b>
+      </a>
+      {% endfor %}
+    {% else %}
+    <div class="client-empty client-empty-compact"><i class="fa-regular fa-circle-check"></i><strong>You're all caught up</strong><span>No upcoming payments right now.</span></div>
+    {% endif %}
+    <a href="{{ url_for('client.deals') }}" class="client-text-link client-payment-footer">View your deals <i class="fa-solid fa-arrow-right"></i></a>
+  </article>
+</section>
+
+<section class="client-lower-grid">
+  <article class="client-panel client-saved-panel">
+    <div class="client-panel-heading"><div><span class="client-section-kicker">SHORTLISTED FOR YOU</span><h2>Saved properties</h2></div><a class="client-text-link" href="{{ url_for('client.favorites') }}">View wishlist <i class="fa-solid fa-arrow-right"></i></a></div>
+    {% if saved_properties %}
+    <div class="client-saved-grid">
+      {% for favorite in saved_properties %}{% set prop = favorite.property %}
+      {% if prop %}
+      <a class="client-property-card" href="{{ url_for('public.property_detail', prop_id=prop.id) }}">
+        <div class="client-property-image">{% if prop.images %}<img src="{{ url_for('static', filename='images/uploads/' + prop.images[0].image_url) }}" alt="{{ prop.title }}" loading="lazy">{% else %}<div class="client-property-placeholder"><i class="fa-solid fa-house"></i></div>{% endif %}<span>{{ prop.listing_type or 'Sale' }}</span></div>
+        <div class="client-property-info"><div class="client-property-price">{% if (prop.listing_type or '')|lower == 'rent' %}PKR {{ '{:,.0f}'.format(prop.price or 0) }} <small>/ month</small>{% elif prop.price >= 10000000 %}PKR {{ '%.2f'|format(prop.price/10000000) }} Cr{% elif prop.price >= 100000 %}PKR {{ '%.2f'|format(prop.price/100000) }} Lac{% else %}PKR {{ '{:,.0f}'.format(prop.price or 0) }}{% endif %}</div><h3>{{ prop.title }}</h3><p><i class="fa-solid fa-location-dot"></i> {{ prop.location.address if prop.location and prop.location.address else 'Pakistan' }}</p><div class="client-property-meta"><span><i class="fa-solid fa-bed"></i> {{ prop.bedrooms or 0 }} beds</span><span><i class="fa-solid fa-ruler-combined"></i> {{ prop.size or '—' }} {{ prop.size_unit or '' }}</span></div></div>
+      </a>
+      {% endif %}{% endfor %}
+    </div>
+    {% else %}
+    <div class="client-empty"><i class="fa-regular fa-heart"></i><strong>Your wishlist is waiting</strong><span>Save properties you love and find them here.</span><a class="client-text-link" href="{{ url_for('public.properties') }}">Discover properties <i class="fa-solid fa-arrow-right"></i></a></div>
+    {% endif %}
+  </article>
+
+  <article class="client-panel client-notifications-panel">
+    <div class="client-panel-heading"><div><span class="client-section-kicker">FROM YOUR AGENTS</span><h2>Messages &amp; updates</h2></div><a class="client-top-icon client-notification-link" href="{{ url_for('client.notifications') }}" aria-label="All notifications"><i class="fa-solid fa-arrow-up-right-from-square"></i></a></div>
+    {% if notifs %}
+      {% for n in notifs %}
+      <a class="client-notification-item" href="{{ n.link if n.link else url_for('client.notifications') }}"><span class="client-notification-icon"><i class="fa-regular fa-message"></i></span><span class="client-notification-copy"><strong>{{ n.message }}</strong><small>{{ n.created_at.strftime('%d %b · %I:%M %p') if n.created_at else '' }}</small></span>{% if not n.is_read %}<i class="client-unread-dot"></i>{% endif %}</a>
+      {% endfor %}
+    {% else %}
+    <div class="client-empty client-empty-compact"><i class="fa-regular fa-comments"></i><strong>No new messages</strong><span>Agent replies and updates will appear here.</span></div>
+    {% endif %}
+    <a href="{{ url_for('client.notifications') }}" class="client-text-link client-notification-footer">Open notifications <i class="fa-solid fa-arrow-right"></i></a>
+  </article>
+</section>
+{% endblock %}

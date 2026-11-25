@@ -1,0 +1,18 @@
+{% extends 'client/base_client.html' %}
+{% block title %}Send Inquiry{% endblock %}
+{% block content %}
+<div class="" style="max-width:600px">
+  <h2 class="mb-1">Send inquiry</h2>
+  <p class="text-muted">{{ prop.title }} · PKR {{ '{:,.0f}'.format(prop.price) }}</p>
+  <form method="POST" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+      {{ form.message.label(class_="form-label") }}
+      {{ form.message(class_="form-control" ~ (" is-invalid" if form.message.errors else ""), rows=5) }}
+      {% for e in form.message.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+    </div>
+    <button class="btn btn-primary">Send inquiry</button>
+    <a href="{{ url_for('client.inquiries') }}" class="btn btn-link">Cancel</a>
+  </form>
+</div>
+{% endblock %}

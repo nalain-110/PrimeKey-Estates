@@ -1,0 +1,22 @@
+{% extends 'client/base_client.html' %}
+{% block title %}Book a Site Visit{% endblock %}
+{% block content %}
+<div class="" style="max-width:600px">
+  <h2 class="mb-1">Book a site visit</h2>
+  <p class="text-muted">{{ prop.title }}</p>
+  <form method="POST" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+      {{ form.scheduled_date.label(class_="form-label") }}
+      {{ form.scheduled_date(class_="form-control" ~ (" is-invalid" if form.scheduled_date.errors else ""), type="datetime-local") }}
+      {% for e in form.scheduled_date.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+    </div>
+    <div class="mb-3">
+      {{ form.notes.label(class_="form-label") }}
+      {{ form.notes(class_="form-control", rows=3) }}
+    </div>
+    <button class="btn btn-primary">Book visit</button>
+    <a href="{{ url_for('client.visits') }}" class="btn btn-link">Cancel</a>
+  </form>
+</div>
+{% endblock %}
