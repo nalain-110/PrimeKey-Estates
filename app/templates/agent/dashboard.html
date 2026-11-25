@@ -1,0 +1,141 @@
+{% extends 'agent/base_agent.html' %}
+{% block title %}Agent Dashboard — PrimeKey Estates{% endblock %}
+
+{% block content %}
+<header class="agent-topbar">
+  <button class="agent-menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
+  <label class="agent-search"><i class="fa-solid fa-magnifying-glass"></i><input id="propertySearch" type="search" placeholder="Search your properties" autocomplete="off"></label>
+  <div class="agent-top-actions">
+    <a class="agent-icon-action" href="{{ url_for('agent.inquiries') }}" aria-label="View inquiries"><i class="fa-regular fa-envelope"></i>{% if inq_count %}<span class="agent-alert-dot"></span>{% endif %}</a>
+    <a class="agent-icon-action" href="{{ url_for('auth.profile') }}" aria-label="Your profile"><i class="fa-regular fa-bell"></i></a>
+    <a class="agent-top-user" href="{{ url_for('auth.profile') }}"><span class="agent-avatar-sm">{{ session.get('user_name','A')[0].upper() }}</span><span>{{ session.get('user_name','Agent') }}<small>Verified agent</small></span></a>
+  </div>
+</header>
+
+<section class="agent-welcome">
+  <div>
+    <div class="agent-eyebrow"><span></span> PRIMEKEY AGENT PORTAL</div>
+    <h1>Welcome back, <em>{{ session.get('user_name','Agent').split(' ')[0] }}</em></h1>
+    <p>Here’s what’s happening with your properties today.</p>
+  </div>
+  <a href="{{ url_for('agent.add_listing') }}" class="agent-primary-btn"><i class="fa-solid fa-plus"></i> Add new listing</a>
+</section>
+
+<section class="agent-kpis" aria-label="Agent performance overview">
+  <article class="agent-kpi"><div class="agent-kpi-label">Portfolio revenue <i class="fa-solid fa-arrow-trend-up"></i></div><strong>{% if total_revenue >= 10000000 %}PKR {{ '%.2f'|format(total_revenue/10000000) }} Cr{% elif total_revenue >= 100000 %}PKR {{ '%.2f'|format(total_revenue/100000) }} Lac{% else %}PKR {{ '{:,.0f}'.format(total_revenue) }}{% endif %}</strong><small>Completed deals</small></article>
+  <article class="agent-kpi"><div class="agent-kpi-label">Active listings <i class="fa-solid fa-house"></i></div><strong>{{ listing_count }}</strong><small>{{ property_status_counts['Sold'] }} sold · {{ property_status_counts['Rented'] }} rented</small></article>
+  <article class="agent-kpi"><div class="agent-kpi-label">New inquiries <i class="fa-solid fa-envelope-open-text"></i></div><strong>{{ inq_count }}</strong><small>Waiting for your reply</small></article>
+  <article class="agent-kpi"><div class="agent-kpi-label">Commissions <i class="fa-solid fa-coins"></i></div><strong>{% if total_commission >= 10000000 %}PKR {{ '%.2f'|format(total_commission/10000000) }} Cr{% elif total_commission >= 100000 %}PKR {{ '%.2f'|format(total_commission/100000) }} Lac{% else %}PKR {{ '{:,.0f}'.format(total_commission) }}{% endif %}</strong><small>{{ deal_count }} closed deals</small></article>
+</section>
+
+<section class="agent-overview-grid">
+  <article class="agent-panel agent-chart-panel">
+    <div class="agent-panel-heading"><div><span class="agent-section-kicker">PERFORMANCE</span><h2>Deals &amp; revenue</h2></div><span class="agent-period"><i class="fa-regular fa-calendar"></i> Last 12 months</span></div>
+    <div class="agent-chart-legend"><span><i class="legend-gold"></i>Deals</span><span><i class="legend-blue"></i>Revenue</span></div>
+    <div class="agent-chart-wrap"><canvas id="agentDealsChart" aria-label="Deals and revenue over the last twelve months"></canvas></div>
+  </article>
+
+  <article class="agent-panel agent-condition-panel">
+    <div class="agent-panel-heading"><div><span class="agent-section-kicker">PORTFOLIO</span><h2>Listing status</h2></div><i class="fa-solid fa-ellipsis agent-more-icon"></i></div>
+    {% set status_total = (property_status_counts['Available'] + property_status_counts['Sold'] + property_status_counts['Rented']) or 1 %}
+    <div class="agent-status-summary"><strong>{{ property_status_counts['Available'] + property_status_counts['Sold'] + property_status_counts['Rented'] }}</strong><span>properties in your portfolio</span></div>
+    {% for label, key, color in [('Available', 'Available', 'gold'), ('Sold', 'Sold', 'green'), ('Rented', 'Rented', 'blue')] %}
+    <div class="agent-status-row"><div><span>{{ label }}</span><b>{{ property_status_counts[key] }}</b></div><div class="agent-progress"><span class="{{ color }}" style="width:{{ (property_status_counts[key] * 100 / status_total)|round|int }}%"></span></div></div>
+    {% endfor %}
+    <a class="agent-panel-link" href="{{ url_for('agent.listings') }}">Manage listings <i class="fa-solid fa-arrow-right"></i></a>
+  </article>
+</section>
+
+<section class="agent-lower-grid">
+  <article class="agent-panel agent-properties-panel">
+    <div class="agent-panel-heading"><div><span class="agent-section-kicker">YOUR PORTFOLIO</span><h2>My properties</h2></div><a class="agent-panel-link" href="{{ url_for('agent.listings') }}">View all <i class="fa-solid fa-arrow-right"></i></a></div>
+    {% if recent_listings %}
+    <div class="agent-property-grid" id="agentPropertyGrid">
+      {% for listing in recent_listings %}
+      <a class="agent-property-card" data-search="{{ (listing.title ~ ' ' ~ (listing.location.address if listing.location else '') ~ ' ' ~ listing.listing_type)|lower }}" href="{{ url_for('agent.edit_listing', prop_id=listing.id) }}">
+        <div class="agent-property-image">
+          {% if listing.images %}<img src="{{ url_for('static', filename='images/uploads/' + listing.images[0].image_url) }}" alt="{{ listing.title }}" loading="lazy">{% else %}<div class="agent-image-placeholder"><i class="fa-solid fa-house"></i><span>PrimeKey Estates</span></div>{% endif %}
+          <span class="agent-property-status {{ 'available' if listing.status == 'Available' else 'closed' }}">{{ listing.status }}</span>
+          <span class="agent-property-type">{{ listing.listing_type }}</span>
+        </div>
+        <div class="agent-property-info"><div class="agent-property-price">{% if listing.price >= 10000000 %}PKR {{ '%.1f'|format(listing.price/10000000) }} Cr{% elif listing.price >= 100000 %}PKR {{ '%.1f'|format(listing.price/100000) }} Lac{% else %}PKR {{ '{:,.0f}'.format(listing.price) }}{% endif %}</div><h3>{{ listing.title }}</h3>
+          <p class="agent-property-location"><i class="fa-solid fa-location-dot"></i> {{ listing.location.address if listing.location and listing.location.address else 'Pakistan' }}</p>
+          <div class="agent-property-meta"><span><i class="fa-solid fa-ruler-combined"></i> {{ listing.size or '—' }} {{ listing.size_unit or '' }}</span><span><i class="fa-solid fa-bed"></i> {{ listing.bedrooms or 0 }}</span><span><i class="fa-solid fa-bath"></i> {{ listing.bathrooms or 0 }}</span></div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    <p class="agent-no-search" id="agentNoSearch" hidden>No properties match your search.</p>
+    {% else %}
+    <div class="agent-empty-properties"><i class="fa-solid fa-house-circle-check"></i><h3>Your portfolio is ready</h3><p>Add a property to start managing your listings here.</p><a href="{{ url_for('agent.add_listing') }}" class="agent-primary-btn"><i class="fa-solid fa-plus"></i> Add your first listing</a></div>
+    {% endif %}
+  </article>
+
+  <article class="agent-panel agent-messages-panel">
+    <div class="agent-panel-heading"><div><span class="agent-section-kicker">CLIENT ACTIVITY</span><h2>Recent inquiries</h2></div><a class="agent-icon-action agent-message-link" href="{{ url_for('agent.inquiries') }}" aria-label="All inquiries"><i class="fa-solid fa-arrow-up-right-from-square"></i></a></div>
+    {% if recent_inquiries %}
+      {% for inq in recent_inquiries %}
+      <a href="{{ url_for('agent.inquiries') }}" class="agent-message-item">
+        <span class="agent-message-avatar">{{ inq.client.name[0].upper() if inq.client and inq.client.name else '?' }}</span>
+        <span class="agent-message-copy"><strong>{{ inq.client.name if inq.client else 'Unknown client' }}</strong><small>{{ inq.message[:62] }}{% if inq.message|length > 62 %}…{% endif %}</small><em>{{ inq.property.title if inq.property else 'Property inquiry' }}</em></span>
+        {% if inq.status == 'Pending' %}<i class="agent-message-unread"></i>{% endif %}
+      </a>
+      {% endfor %}
+    {% else %}
+      <div class="agent-empty-messages"><i class="fa-regular fa-comments"></i><p>Your new inquiries will show up here.</p></div>
+    {% endif %}
+    <a href="{{ url_for('agent.inquiries') }}" class="agent-all-messages">Open inbox <i class="fa-solid fa-arrow-right"></i></a>
+  </article>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(() => {
+  const canvas = document.getElementById('agentDealsChart');
+  if (canvas && window.Chart) {
+    new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: {{ chart_labels|tojson }},
+        datasets: [
+          { type: 'bar', label: 'Deals', data: {{ chart_data|tojson }}, yAxisID: 'deals', backgroundColor: 'rgba(201,168,76,.55)', borderColor: '#c9a84c', borderWidth: 1, borderRadius: 5, maxBarThickness: 22 },
+          { type: 'line', label: 'Revenue (PKR)', data: {{ revenue_data|tojson }}, yAxisID: 'revenue', borderColor: '#3498db', backgroundColor: 'rgba(52,152,219,.12)', pointBackgroundColor: '#3498db', pointRadius: 3, tension: .35, fill: false }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1a1e28', titleColor: '#f0f0f0', bodyColor: '#9ea3b0', borderColor: 'rgba(201,168,76,.25)', borderWidth: 1 } },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: '#9ea3b0', maxRotation: 0, autoSkip: true, maxTicksLimit: 6 } },
+          deals: { beginAtZero: true, position: 'left', ticks: { color: '#9ea3b0', precision: 0 }, grid: { color: 'rgba(255,255,255,.07)' } },
+          revenue: { beginAtZero: true, position: 'right', ticks: { color: '#9ea3b0', callback: value => 'PKR ' + Number(value).toLocaleString() }, grid: { drawOnChartArea: false } }
+        }
+      }
+    });
+  }
+
+  const search = document.getElementById('propertySearch');
+  const cards = [...document.querySelectorAll('.agent-property-card')];
+  const noSearch = document.getElementById('agentNoSearch');
+  if (search) search.addEventListener('input', () => {
+    const query = search.value.trim().toLowerCase();
+    let visible = 0;
+    cards.forEach(card => {
+      const match = !query || card.dataset.search.includes(query);
+      card.hidden = !match;
+      if (match) visible++;
+    });
+    if (noSearch) noSearch.hidden = visible > 0;
+  });
+
+  const toggle = document.querySelector('.agent-menu-toggle');
+  const sidebar = document.querySelector('.dash-sidebar');
+  if (toggle && sidebar) toggle.addEventListener('click', () => {
+    const open = sidebar.classList.toggle('is-open');
+    toggle.setAttribute('aria-expanded', String(open));
+  });
+})();
+</script>
+{% endblock %}

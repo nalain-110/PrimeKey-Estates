@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Agent Panel — PrimeKey Estates{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .dash-layout { display:grid !important; grid-template-columns:82px minmax(0,1fr) !important; min-height:100vh; background:var(--bg-dark); }
+    .dash-sidebar { position:sticky !important; top:0 !important; left:auto !important; width:82px !important; height:100vh !important; padding:18px 10px !important; overflow-y:auto; display:flex !important; flex-direction:column; z-index:40; background:linear-gradient(180deg,#141822,#0f1218) !important; border-right:1px solid var(--border-subtle); }
+    .dash-sidebar-header { padding:0 0 16px !important; margin:0 0 12px !important; border-bottom:1px solid var(--border-subtle); }
+    .dash-logo { display:grid; place-items:center; width:44px; height:44px; margin:0 auto 16px; border-radius:14px; color:#0d0f14; font:900 1rem 'Playfair Display',serif; background:linear-gradient(135deg,#e8c97e,#9a7a30); box-shadow:0 8px 22px rgba(201,168,76,.2); }
+    .dash-user { justify-content:center; padding:0 !important; background:none !important; }
+    .dash-user > div:last-child { display:none; }
+    .dash-avatar { width:38px !important; height:38px !important; color:#0d0f14 !important; background:linear-gradient(135deg,#e8c97e,#9a7a30) !important; }
+    .dash-nav { flex:1; }
+    .dash-nav-label { display:none; }
+    .dash-nav-section { margin:0 0 14px; }
+    .dash-nav-item { justify-content:center; width:50px; height:48px; margin:3px auto !important; padding:0 !important; overflow:hidden; white-space:nowrap; font-size:0 !important; border-radius:14px !important; color:var(--text-secondary) !important; }
+    .dash-nav-item i { width:auto !important; margin:0 !important; font-size:1.02rem !important; }
+    .dash-nav-item.active { color:var(--gold-light) !important; background:rgba(201,168,76,.12) !important; }
+    .dash-main { min-width:0; margin:0 !important; padding:0 30px 36px !important; }
+    .agent-topbar { position:sticky; top:0; z-index:25; height:76px; display:flex; align-items:center; justify-content:space-between; gap:20px; margin:0 -30px 28px; padding:0 30px; border-bottom:1px solid var(--border-subtle); background:rgba(13,15,20,.92); backdrop-filter:blur(18px); }
+    .agent-menu-toggle { display:none; width:40px; height:40px; border:1px solid var(--border-subtle); border-radius:12px; color:var(--text-primary); background:var(--bg-panel); cursor:pointer; }
+    .agent-search { display:flex; align-items:center; gap:11px; width:min(380px,45%); padding:11px 14px; border:1px solid var(--border-subtle); border-radius:12px; color:var(--text-muted); background:rgba(255,255,255,.035); }
+    .agent-search:focus-within { border-color:rgba(201,168,76,.5); box-shadow:0 0 0 3px rgba(201,168,76,.09); }
+    .agent-search input { width:100%; border:0; outline:0; color:var(--text-primary); background:transparent; font:400 .88rem 'Outfit',sans-serif; }
+    .agent-search input::placeholder { color:var(--text-muted); }
+    .agent-top-actions { display:flex; align-items:center; gap:12px; }
+    .agent-icon-action { position:relative; display:grid; place-items:center; width:40px; height:40px; border:1px solid var(--border-subtle); border-radius:12px; color:var(--text-secondary); background:rgba(255,255,255,.025); transition:.2s; }
+    .agent-icon-action:hover { color:var(--gold-light); border-color:rgba(201,168,76,.35); background:var(--gold-soft); }
+    .agent-alert-dot,.agent-message-unread { position:absolute; width:8px; height:8px; border:2px solid var(--bg-dark); border-radius:50%; background:#e74c3c; }
+    .agent-alert-dot { top:8px; right:8px; }
+    .agent-top-user { display:flex; align-items:center; gap:10px; margin-left:4px; color:var(--text-primary); font-size:.85rem; font-weight:600; }
+    .agent-top-user small { display:block; margin-top:2px; color:var(--text-muted); font-size:.7rem; font-weight:400; }
+    .agent-avatar-sm { display:grid; place-items:center; width:38px; height:38px; border:1px solid rgba(201,168,76,.3); border-radius:50%; color:var(--gold-light); background:rgba(201,168,76,.13); }
+    .agent-welcome { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin:0 0 24px; }
+    .agent-eyebrow,.agent-section-kicker { color:var(--gold-light); font-size:.65rem; font-weight:700; letter-spacing:1.6px; }
+    .agent-eyebrow { display:flex; align-items:center; gap:8px; margin-bottom:9px; }
+    .agent-eyebrow span { width:7px; height:7px; border-radius:50%; background:var(--gold); box-shadow:0 0 12px var(--gold-glow); }
+    .agent-welcome h1 { margin:0; color:var(--text-primary); font:700 clamp(1.65rem,3vw,2.2rem)/1.15 'Playfair Display',serif; }
+    .agent-welcome h1 em { color:var(--gold-light); font-style:normal; }
+    .agent-welcome p { margin:8px 0 0; color:var(--text-secondary); font-size:.9rem; }
+    .agent-primary-btn { display:inline-flex; align-items:center; justify-content:center; gap:9px; min-height:44px; padding:0 17px; border:0; border-radius:12px; color:#0d0f14 !important; background:linear-gradient(135deg,#e8c97e,#9a7a30); box-shadow:0 8px 22px rgba(201,168,76,.17); font-size:.85rem; font-weight:700; transition:.2s; }
+    .agent-primary-btn:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(201,168,76,.24); }
+    .agent-kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-bottom:18px; }
+    .agent-kpi,.agent-panel { border:1px solid var(--border-subtle); border-radius:17px; background:linear-gradient(155deg,rgba(26,30,40,.96),rgba(19,22,30,.98)); box-shadow:0 12px 30px rgba(0,0,0,.14); }
+    .agent-kpi { min-width:0; padding:17px 18px 16px; }
+    .agent-kpi-label { display:flex; align-items:center; justify-content:space-between; gap:8px; color:var(--text-secondary); font-size:.76rem; }
+    .agent-kpi-label i { color:var(--gold); font-size:.85rem; }
+    .agent-kpi strong { display:block; overflow:hidden; margin:13px 0 5px; color:var(--text-primary); font-size:clamp(1.15rem,2vw,1.55rem); font-weight:700; letter-spacing:-.4px; text-overflow:ellipsis; white-space:nowrap; }
+    .agent-kpi small { color:var(--text-muted); font-size:.72rem; }
+    .agent-overview-grid { display:grid; grid-template-columns:minmax(0,1.8fr) minmax(260px,.85fr); gap:16px; margin-bottom:16px; }
+    .agent-panel { min-width:0; padding:20px; }
+    .agent-panel-heading { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:17px; }
+    .agent-panel-heading h2 { margin:5px 0 0; color:var(--text-primary); font:700 1.08rem 'Playfair Display',serif; }
+    .agent-period { display:flex; align-items:center; gap:7px; color:var(--text-secondary); font-size:.72rem; }
+    .agent-chart-legend { display:flex; gap:16px; margin-bottom:4px; color:var(--text-secondary); font-size:.7rem; }
+    .agent-chart-legend span { display:flex; align-items:center; gap:7px; }
+    .agent-chart-legend i { display:block; width:8px; height:8px; border-radius:50%; }
+    .legend-gold { background:var(--gold); }.legend-blue { background:#3498db; }
+    .agent-chart-wrap { position:relative; height:235px; }
+    .agent-more-icon { color:var(--text-muted); }
+    .agent-status-summary { display:flex; align-items:baseline; gap:9px; padding:3px 0 15px; border-bottom:1px solid var(--border-subtle); }
+    .agent-status-summary strong { color:var(--gold-light); font-size:1.65rem; }.agent-status-summary span { color:var(--text-muted); font-size:.72rem; }
+    .agent-status-row { margin:16px 0; }
+    .agent-status-row > div:first-child { display:flex; justify-content:space-between; margin-bottom:8px; color:var(--text-secondary); font-size:.78rem; }
+    .agent-status-row b { color:var(--text-primary); font-weight:600; }
+    .agent-progress { height:6px; overflow:hidden; border-radius:8px; background:rgba(255,255,255,.07); }
+    .agent-progress span { display:block; height:100%; border-radius:inherit; }.agent-progress .gold { background:linear-gradient(90deg,#e8c97e,#9a7a30); }.agent-progress .green { background:#2ecc71; }.agent-progress .blue { background:#3498db; }
+    .agent-panel-link { display:inline-flex; align-items:center; gap:8px; color:var(--gold-light) !important; font-size:.76rem; font-weight:600; }
+    .agent-panel-link i,.agent-all-messages i { font-size:.68rem; transition:transform .2s; }.agent-panel-link:hover i,.agent-all-messages:hover i { transform:translateX(3px); }
+    .agent-lower-grid { display:grid; grid-template-columns:minmax(0,1.8fr) minmax(260px,.85fr); gap:16px; align-items:start; }
+    .agent-property-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+    .agent-property-card { min-width:0; overflow:hidden; border:1px solid var(--border-subtle); border-radius:14px; background:rgba(13,15,20,.45); transition:transform .2s,border-color .2s; }
+    .agent-property-card:hover { transform:translateY(-3px); border-color:rgba(201,168,76,.35); }
+    .agent-property-card[hidden] { display:none; }
+    .agent-property-image { position:relative; height:132px; overflow:hidden; background:var(--bg-panel); }
+    .agent-property-image img { width:100%; height:100%; object-fit:cover; transition:transform .45s; }.agent-property-card:hover img { transform:scale(1.04); }
+    .agent-image-placeholder { display:flex; height:100%; flex-direction:column; align-items:center; justify-content:center; gap:7px; color:rgba(232,201,126,.6); background:radial-gradient(circle at 50% 20%,rgba(201,168,76,.14),transparent 55%),linear-gradient(135deg,#1a1e28,#10131a); }
+    .agent-image-placeholder i { font-size:1.7rem; }.agent-image-placeholder span { font-size:.58rem; letter-spacing:1.4px; text-transform:uppercase; }
+    .agent-property-status,.agent-property-type { position:absolute; top:9px; padding:5px 8px; border:1px solid rgba(255,255,255,.12); border-radius:20px; color:#f0f0f0; background:rgba(13,15,20,.78); backdrop-filter:blur(8px); font-size:.6rem; }
+    .agent-property-status { left:9px; }.agent-property-status.available { color:#e8c97e; }.agent-property-status.closed { color:#9ea3b0; }.agent-property-type { right:9px; }
+    .agent-property-info { padding:12px; }.agent-property-price { color:var(--gold-light); font-size:.82rem; font-weight:700; }
+    .agent-property-info h3 { overflow:hidden; margin:5px 0; color:var(--text-primary); font-size:.86rem; font-weight:600; text-overflow:ellipsis; white-space:nowrap; }
+    .agent-property-location { overflow:hidden; margin:0 0 11px; color:var(--text-muted); font-size:.68rem; text-overflow:ellipsis; white-space:nowrap; }.agent-property-location i { margin-right:4px; color:var(--gold-dark); }
+    .agent-property-meta { display:flex; flex-wrap:wrap; gap:10px; padding-top:9px; border-top:1px solid var(--border-subtle); color:var(--text-secondary); font-size:.65rem; }.agent-property-meta i { margin-right:3px; color:var(--text-muted); }
+    .agent-message-item { position:relative; display:flex; align-items:flex-start; gap:10px; padding:12px 0; border-bottom:1px solid var(--border-subtle); }
+    .agent-message-avatar { display:grid; place-items:center; flex:0 0 34px; height:34px; border:1px solid rgba(201,168,76,.22); border-radius:50%; color:var(--gold-light); background:rgba(201,168,76,.1); font-size:.78rem; font-weight:700; }
+    .agent-message-copy { display:block; min-width:0; flex:1; }.agent-message-copy strong,.agent-message-copy small,.agent-message-copy em { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .agent-message-copy strong { color:var(--text-primary); font-size:.77rem; }.agent-message-copy small { margin:3px 0; color:var(--text-secondary); font-size:.68rem; }.agent-message-copy em { color:var(--text-muted); font-size:.63rem; font-style:normal; }
+    .agent-message-unread { position:static; flex:0 0 7px; width:7px; height:7px; margin-top:6px; border:0; background:var(--gold); }
+    .agent-message-link { width:34px; height:34px; }.agent-all-messages { display:flex; justify-content:space-between; padding-top:14px; color:var(--gold-light) !important; font-size:.75rem; font-weight:600; }
+    .agent-empty-properties,.agent-empty-messages { padding:30px 12px; text-align:center; color:var(--text-secondary); }.agent-empty-properties > i,.agent-empty-messages > i { display:block; margin-bottom:11px; color:var(--gold); font-size:1.6rem; }.agent-empty-properties h3 { margin-bottom:5px; color:var(--text-primary); font:700 1.05rem 'Playfair Display',serif; }.agent-empty-properties p,.agent-empty-messages p { margin:0 0 14px; color:var(--text-muted); font-size:.78rem; }.agent-empty-properties .agent-primary-btn { margin-top:4px; }.agent-empty-messages { padding:34px 12px; }.agent-no-search { padding:24px 0; color:var(--text-muted); text-align:center; font-size:.82rem; }
+    @media(max-width:1120px) { .agent-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); }.agent-property-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media(max-width:850px) { .dash-layout { grid-template-columns:1fr !important; }.dash-sidebar { display:none !important; position:fixed !important; top:0 !important; left:0 !important; width:250px !important; padding:20px 14px !important; background:#13161e !important; box-shadow:18px 0 50px rgba(0,0,0,.45); }.dash-sidebar.is-open { display:flex !important; }.dash-sidebar.is-open .dash-sidebar-header { padding:0 0 16px !important; }.dash-sidebar.is-open .dash-logo { width:auto; display:block; margin:0 8px 16px; padding:10px; font-size:1.2rem; text-align:left; }.dash-sidebar.is-open .dash-logo::after { content:'PrimeKey'; margin-left:10px; }.dash-sidebar.is-open .dash-user { justify-content:flex-start; padding:0 8px !important; }.dash-sidebar.is-open .dash-user > div:last-child { display:block; }.dash-sidebar.is-open .dash-nav-label { display:block; }.dash-sidebar.is-open .dash-nav-item { justify-content:flex-start; width:100%; height:auto; margin:2px 0 !important; padding:11px 12px !important; font-size:.88rem !important; }.dash-sidebar.is-open .dash-nav-item i { width:18px !important; margin-right:8px !important; }.dash-main { padding:0 22px 28px !important; }.agent-menu-toggle { display:grid; place-items:center; }.agent-topbar { margin:0 -22px 24px; padding:0 22px; }.agent-overview-grid,.agent-lower-grid { grid-template-columns:minmax(0,1.35fr) minmax(240px,.8fr); } }
+    @media(max-width:640px) { .dash-main { padding:0 15px 24px !important; }.agent-topbar { height:64px; gap:10px; margin:0 -15px 20px; padding:0 15px; }.agent-search { width:auto; flex:1; padding:10px; }.agent-search input { font-size:.78rem; }.agent-top-actions { gap:7px; }.agent-top-actions > .agent-icon-action { width:36px; height:36px; }.agent-top-user { display:none; }.agent-welcome { align-items:flex-start; flex-direction:column; gap:15px; }.agent-welcome p { font-size:.82rem; }.agent-primary-btn { min-height:41px; }.agent-kpis { gap:10px; }.agent-kpi { padding:14px; }.agent-kpi-label { font-size:.7rem; }.agent-kpi strong { font-size:1.18rem; }.agent-overview-grid,.agent-lower-grid { grid-template-columns:1fr; gap:12px; }.agent-panel { padding:16px; }.agent-chart-wrap { height:210px; }.agent-property-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }.agent-property-image { height:116px; }.agent-property-info { padding:10px; }.agent-property-meta { gap:7px; font-size:.61rem; } }
+    @media(max-width:380px) { .agent-kpis { grid-template-columns:1fr; }.agent-property-grid { grid-template-columns:1fr; }.agent-property-image { height:165px; }.agent-period { font-size:0; }.agent-period i { font-size:.85rem; } }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+{% with messages = get_flashed_messages(with_categories=True) %}
+  {% if messages %}
+    <div style="position:fixed;top:20px;right:24px;z-index:9999;min-width:320px;max-width:420px;">
+      {% for category, message in messages %}
+        <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category in ['danger','error'] else category }}">
+          <i class="fa-solid fa-circle-{{ 'check' if category=='success' else 'exclamation' }}"></i>
+          {{ message }}<button class="alert-close" type="button">✕</button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<div class="dash-layout">
+  <aside class="dash-sidebar">
+    <div class="dash-sidebar-header">
+      <div class="dash-logo">PK</div>
+      <div class="dash-user">
+        <div class="dash-avatar">{{ session.get('user_name','A')[0].upper() }}</div>
+        <div>
+          <div class="dash-user-name">{{ session.get('user_name','Agent') }}</div>
+          <div class="dash-user-role" style="color:var(--gold);font-size:0.72rem;font-weight:700;">AGENT</div>
+        </div>
+      </div>
+    </div>
+    <nav class="dash-nav">
+      <div class="dash-nav-section">
+        <div class="dash-nav-label">Main</div>
+        <a title="Dashboard" aria-label="Dashboard" class="dash-nav-item {% if request.endpoint == 'agent.dashboard' %}active{% endif %}" href="{{ url_for('agent.dashboard') }}"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+        <a title="My Listings" aria-label="My Listings" class="dash-nav-item {% if 'listing' in request.endpoint %}active{% endif %}" href="{{ url_for('agent.listings') }}"><i class="fa-solid fa-list-ul"></i> My Listings</a>
+        <a title="Add Listing" aria-label="Add Listing" class="dash-nav-item {% if request.endpoint == 'agent.add_listing' %}active{% endif %}" href="{{ url_for('agent.add_listing') }}"><i class="fa-solid fa-plus-circle"></i> Add Listing</a>
+        <a title="Inquiries" aria-label="Inquiries" class="dash-nav-item {% if 'inquiry' in request.endpoint %}active{% endif %}" href="{{ url_for('agent.inquiries') }}"><i class="fa-solid fa-envelope-open-text"></i> Inquiries</a>
+        <a title="Offers" aria-label="Offers" class="dash-nav-item {% if 'offer' in request.endpoint %}active{% endif %}" href="{{ url_for('agent.offers') }}"><i class="fa-solid fa-tag"></i> Offers</a>
+        <a title="Deals" aria-label="Deals" class="dash-nav-item {% if 'deal' in request.endpoint %}active{% endif %}" href="{{ url_for('agent.deals') }}"><i class="fa-solid fa-handshake"></i> Deals</a>
+        <a title="Site Visits" aria-label="Site Visits" class="dash-nav-item {% if 'visit' in request.endpoint %}active{% endif %}" href="{{ url_for('agent.visits') }}"><i class="fa-solid fa-calendar-check"></i> Site Visits</a>
+        <a title="Commissions" aria-label="Commissions" class="dash-nav-item {% if 'commission' in request.endpoint %}active{% endif %}" href="{{ url_for('agent.commissions') }}"><i class="fa-solid fa-dollar-sign"></i> Commissions</a>
+        <a title="Token Receipts" aria-label="Token Receipts" class="dash-nav-item {% if 'receipt' in request.endpoint %}active{% endif %}" href="{{ url_for('agent.receipts') }}"><i class="fa-solid fa-receipt"></i> Token Receipts</a>
+        <a title="Installments" aria-label="Installments" class="dash-nav-item {% if 'install' in request.endpoint %}active{% endif %}" href="{{ url_for('agent.installments') }}"><i class="fa-solid fa-calendar-days"></i> Installments</a>
+      </div>
+      <div class="dash-nav-section">
+        <div class="dash-nav-label">Content</div>
+        <a title="My Blogs" aria-label="My Blogs" class="dash-nav-item {% if 'blog' in request.endpoint %}active{% endif %}" href="{{ url_for('agent.blogs') }}"><i class="fa-solid fa-blog"></i> My Blogs</a>
+        <a title="Public Site" aria-label="Public Site" class="dash-nav-item" href="{{ url_for('public.properties') }}"><i class="fa-solid fa-globe"></i> Public Site</a>
+        <a title="My Profile" aria-label="My Profile" class="dash-nav-item" href="{{ url_for('auth.profile') }}"><i class="fa-solid fa-user"></i> My Profile</a>
+        <a title="Logout" aria-label="Logout" class="dash-nav-item" href="{{ url_for('auth.logout') }}" style="color:var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+      </div>
+    </nav>
+  </aside>
+  <main class="dash-main" style="min-height:100vh;">
+    {% block content %}{% endblock %}
+  </main>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
