@@ -1,0 +1,286 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Admin Dashboard — PrimeKey Estates{% endblock %}
+{% block page_head %}
+<div class="page-head">
+  <div class="page-title"><i class="fa-solid fa-gauge-high"></i> Dashboard</div>
+  <div class="page-sub">Overview of your real estate platform</div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 20px; }
+    .stat { position: relative; overflow: hidden; border-radius: var(--radius); padding: 24px; color: #fdf9f9; box-shadow: 0 12px 28px rgba(0,0,0,.12); transition: transform .3s; }
+    .stat:hover { transform: translateY(-4px); }
+    .stat::before, .stat::after { content: ''; position: absolute; border-radius: 50%; background: rgba(255,255,255,.14); }
+    .stat::before { width: 170px; height: 170px; right: -50px; top: -60px; }
+    .stat::after { width: 120px; height: 120px; right: 30px; bottom: -70px; background: rgba(255,255,255,.1); }
+    .stat > * { position: relative; z-index: 1; }
+    .stat-top { display: flex; align-items: center; justify-content: space-between; font-weight: 500; font-size: .95rem; opacity: .95; }
+    .stat-top i { font-size: 1.2rem; opacity: .9; }
+    .stat-num { font-size: 1.9rem; font-weight: 800; margin: 14px 0 6px; letter-spacing: -.5px; }
+    .stat-note { font-size: .8rem; opacity: .92; }
+    .g-gold   { background: linear-gradient(135deg, #f7c85f, #e8893f); }
+    .g-blue   { background: linear-gradient(135deg, #5db7ff, #3a6fe8); }
+    .g-teal   { background: linear-gradient(135deg, #4de3c4, #1fa8b5); }
+    .g-purple { background: linear-gradient(135deg, #b39ddb, #7e57c2); }
+
+    .minis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 24px; }
+    .mini { display: flex; align-items: center; gap: 14px; background: var(--card); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow); transition: transform .25s; }
+    .mini:hover { transform: translateY(-3px); }
+    .mini .ic { width: 46px; height: 46px; border-radius: 13px; display: grid; place-items: center; font-size: 1.05rem; flex-shrink: 0; }
+    .ic.gold { background: rgba(201,168,76,.16); color: #9a7a30; } .ic.blue { background: rgba(52,152,219,.15); color: #2b7fc0; }
+    .ic.orange { background: rgba(243,156,18,.16); color: #c47d0a; } .ic.red { background: rgba(231,76,60,.13); color: #d6402f; }
+    .mini b { display: block; font-size: 1.35rem; font-weight: 800; line-height: 1.1; }
+    .mini small { color: var(--muted); font-size: .78rem; }
+
+    .legend { display: flex; gap: 14px; font-size: .78rem; color: var(--muted); }
+    .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
+    .row { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px; }
+    .row-2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 20px; margin-bottom: 24px; }
+    .chart-box { position: relative; height: 310px; }
+    .chart-box.sm { height: 220px; }
+    .donut-legend { margin-top: 16px; display: grid; gap: 10px; }
+    .donut-legend div { display: flex; align-items: center; justify-content: space-between; font-size: .85rem; color: #5b6075; }
+    .donut-legend span i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 8px; }
+    .bar-line { margin-bottom: 14px; }
+    .bar-line .lbl { display: flex; justify-content: space-between; font-size: .85rem; margin-bottom: 6px; color: #5b6075; }
+    .track { height: 8px; border-radius: 8px; background: #e2e6f0; overflow: hidden; }
+    .fill { height: 100%; border-radius: 8px; }
+    .li { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+    .li:first-of-type { border-top: none; }
+    .li b { display: block; font-size: .9rem; }
+    .li small { color: var(--muted); font-size: .78rem; }
+    .li .pill { margin-left: auto; }
+    .unread { width: 8px; height: 8px; border-radius: 50%; background: #e74c3c; display: inline-block; margin-right: 6px; }
+
+    @media (max-width: 1200px) { .stats, .minis { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 992px) { .row, .row-2 { grid-template-columns: 1fr; } }
+    @media (max-width: 560px) { .stats, .minis { grid-template-columns: 1fr; } }
+{% endblock %}
+
+{% block content %}
+{# PKR formatter: Cr / Lac / plain #}
+{% macro pkr(n) -%}
+  {%- set v = (n or 0)|float -%}
+  {%- if v >= 10000000 -%}PKR {{ '%.2f'|format(v / 10000000) }} Cr
+  {%- elif v >= 100000 -%}PKR {{ '%.2f'|format(v / 100000) }} Lac
+  {%- else -%}PKR {{ '{:,.0f}'.format(v) }}{%- endif -%}
+{%- endmacro %}
+{% set pal = ['#c9a84c', '#5db7ff', '#4de3c4', '#b39ddb', '#f39c12', '#e74c3c', '#1abc9c', '#e91e63'] %}
+{% set sale = for_sale|default(0)|int %}
+{% set rent = for_rent|default(0)|int %}
+{% set split_total = (sale + rent) or 1 %}
+{% set roles = role_data|default([0, 0, 0]) %}
+{% set roles_total = ((roles[0] + roles[1] + roles[2]) or 1) %}
+
+<!-- Gradient stat cards -->
+<section class="stats">
+  <div class="stat g-gold">
+    <div class="stat-top">Total Revenue <i class="fa-solid fa-sack-dollar"></i></div>
+    <div class="stat-num">{{ pkr(total_revenue) }}</div>
+    <div class="stat-note">From all deals</div>
+  </div>
+  <div class="stat g-blue">
+    <div class="stat-top">Total Properties <i class="fa-solid fa-building"></i></div>
+    <div class="stat-num">{{ "{:,}".format(total_props|default(0)|int) }}</div>
+    <div class="stat-note">{{ sale }} for sale · {{ rent }} for rent</div>
+  </div>
+  <div class="stat g-teal">
+    <div class="stat-top">Total Users <i class="fa-solid fa-users"></i></div>
+    <div class="stat-num">{{ "{:,}".format(total_users|default(0)|int) }}</div>
+    <div class="stat-note">{{ total_agents|default(0) }} registered agents</div>
+  </div>
+  <div class="stat g-purple">
+    <div class="stat-top">Total Deals <i class="fa-solid fa-handshake"></i></div>
+    <div class="stat-num">{{ "{:,}".format(total_deals|default(0)|int) }}</div>
+    <div class="stat-note">Commission: {{ pkr(total_comm) }}</div>
+  </div>
+</section>
+
+<!-- Quick numbers -->
+<section class="minis">
+  <a class="mini" href="{{ url_for('admin.properties') }}"><div class="ic gold"><i class="fa-solid fa-envelope-open-text"></i></div><div><b>{{ total_inquiries|default(0) }}</b><small>Total Inquiries</small></div></a>
+  <a class="mini" href="{{ url_for('admin.deals') }}"><div class="ic orange"><i class="fa-solid fa-hourglass-half"></i></div><div><b>{{ pending_inq|default(0) }}</b><small>Pending Inquiries</small></div></a>
+  <a class="mini" href="{{ url_for('admin.deals') }}"><div class="ic blue"><i class="fa-solid fa-hand-holding-dollar"></i></div><div><b>{{ pending_offers|default(0) }}</b><small>Pending Offers</small></div></a>
+  <a class="mini" href="{{ url_for('admin.messages') }}"><div class="ic red"><i class="fa-solid fa-envelope"></i></div><div><b>{{ unread_msgs|default(0) }}</b><small>Unread Messages</small></div></a>
+</section>
+
+<!-- Charts -->
+<section class="row">
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">Deals &amp; Revenue (Last 12 Months)</div>
+      <div class="legend"><span><i style="background:#c9a84c"></i>Deals</span><span><i style="background:#5db7ff"></i>Revenue</span></div>
+    </div>
+    <div class="chart-box"><canvas id="mainChart"></canvas></div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">Property Types</div></div>
+    <div class="chart-box sm"><canvas id="typeChart"></canvas></div>
+    <div class="donut-legend">
+      {% for label in (prop_type_labels or []) %}
+      <div><span><i style="background:{{ pal[loop.index0 % pal|length] }}"></i>{{ label }}</span><b>{{ (prop_type_data or [])[loop.index0] }}</b></div>
+      {% else %}
+      <div style="color:#8b90a3;">No property types yet</div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="row-2">
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">Recent Deals</div><a class="panel-link" href="{{ url_for('admin.deals') }}">View all</a></div>
+    {% if recent_deals %}
+    <div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Property</th><th>Price</th><th>Status</th><th>Date</th></tr></thead>
+      <tbody>
+      {% for d in recent_deals %}
+        {% set p = d.property %}
+        <tr>
+          <td class="strong">{{ d.id }}</td>
+          <td>{{ p.title if p else '—' }}</td>
+          <td class="strong">{{ pkr(d.deal_price) }}</td>
+          <td><span class="pill {{ (d.status or 'pending')|lower|replace(' ', '-') }}">{{ d.status or 'Pending' }}</span></td>
+          <td>{{ d.deal_date.strftime('%d %b %Y') if d.deal_date else '—' }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+    {% else %}<div class="empty"><i class="fa-solid fa-handshake"></i>No deals yet</div>{% endif %}
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">Listings &amp; Users</div></div>
+    <div class="bar-line"><div class="lbl"><span>For Sale</span><b>{{ sale }}</b></div><div class="track"><div class="fill" style="width:{{ (sale * 100 / split_total)|round|int }}%;background:linear-gradient(90deg,#c9a84c,#e8893f)"></div></div></div>
+    <div class="bar-line"><div class="lbl"><span>For Rent</span><b>{{ rent }}</b></div><div class="track"><div class="fill" style="width:{{ (rent * 100 / split_total)|round|int }}%;background:linear-gradient(90deg,#5db7ff,#3a6fe8)"></div></div></div>
+    <hr style="border:none;border-top:1px solid var(--line);margin:18px 0;">
+    <div class="bar-line"><div class="lbl"><span>Admins</span><b>{{ roles[0] }}</b></div><div class="track"><div class="fill" style="width:{{ (roles[0] * 100 / roles_total)|round|int }}%;background:#e8893f"></div></div></div>
+    <div class="bar-line"><div class="lbl"><span>Agents</span><b>{{ roles[1] }}</b></div><div class="track"><div class="fill" style="width:{{ (roles[1] * 100 / roles_total)|round|int }}%;background:#5db7ff"></div></div></div>
+    <div class="bar-line" style="margin-bottom:0"><div class="lbl"><span>Clients</span><b>{{ roles[2] }}</b></div><div class="track"><div class="fill" style="width:{{ (roles[2] * 100 / roles_total)|round|int }}%;background:#4de3c4"></div></div></div>
+  </div>
+</section>
+
+<section class="row-2">
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">Recent Properties</div><a class="panel-link" href="{{ url_for('admin.properties') }}">View all</a></div>
+    {% if recent_props %}
+    <div class="table-wrap"><table>
+      <thead><tr><th>Title</th><th>Type</th><th>Price</th><th>Verified</th></tr></thead>
+      <tbody>
+      {% for p in recent_props %}
+        <tr>
+          <td class="strong">{{ p.title }}</td>
+          <td><span class="pill {{ (p.listing_type or 'sale')|lower }}">{{ p.listing_type or '—' }}</span></td>
+          <td>{{ pkr(p.price) }}</td>
+          <td>{% if p.is_verified %}<span class="pill verified"><i class="fa-solid fa-check"></i> Yes</span>{% else %}<span class="pill muted">No</span>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+    {% else %}<div class="empty"><i class="fa-solid fa-building"></i>No properties yet</div>{% endif %}
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">New Members</div><a class="panel-link" href="{{ url_for('admin.users') }}">View all</a></div>
+    {% for u in recent_users %}
+    <div class="li searchable">
+      <div class="avatar sm">{{ ((u.name or '?')[0])|upper }}</div>
+      <div><b>{{ u.name }}</b><small>{{ u.email }}</small></div>
+      {% if u.role_id == 1 %}<span class="pill admin">Admin</span>{% elif u.role_id == 2 %}<span class="pill agent">Agent</span>{% else %}<span class="pill client">Client</span>{% endif %}
+    </div>
+    {% else %}<div class="empty"><i class="fa-solid fa-users"></i>No members yet</div>{% endfor %}
+  </div>
+</section>
+
+<section class="row-2">
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">Recent Activity</div></div>
+    {% if recent_logs %}
+    <div class="table-wrap"><table>
+      <thead><tr><th>Action</th><th>Table</th><th>When</th></tr></thead>
+      <tbody>
+      {% for l in recent_logs %}
+        <tr>
+          <td>{{ l.action }}</td>
+          <td>{{ l.table_name or '—' }}</td>
+          <td>{{ l.timestamp.strftime('%d %b, %H:%M') if l.timestamp else '—' }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+    {% else %}<div class="empty"><i class="fa-solid fa-clock-rotate-left"></i>No recent activity yet</div>{% endif %}
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">Recent Messages</div><a class="panel-link" href="{{ url_for('admin.messages') }}">View all</a></div>
+    {% for m in recent_contacts %}
+    <div class="li searchable">
+      <div class="avatar sm">{{ ((m.name or '?')[0])|upper }}</div>
+      <div>
+        <b>{% if not m.is_read %}<span class="unread"></span>{% endif %}{{ m.name }}</b>
+        <small>{{ (m.subject or m.message or '')[:48] }}</small>
+      </div>
+    </div>
+    {% else %}<div class="empty"><i class="fa-solid fa-envelope"></i>No messages yet</div>{% endfor %}
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  var labels   = {{ (chart_labels or [])|tojson }};
+  var dealsArr = {{ (deals_data or [])|tojson }};
+  var revArr   = {{ (revenue_data or [])|tojson }};
+  var typeLbl  = {{ (prop_type_labels or [])|tojson }};
+  var typeData = {{ (prop_type_data or [])|tojson }};
+  var palette  = ['#c9a84c', '#5db7ff', '#4de3c4', '#b39ddb', '#f39c12', '#e74c3c', '#1abc9c', '#e91e63'];
+
+  function pkrShort(v) {
+    if (v >= 10000000) return (v / 10000000).toFixed(1) + ' Cr';
+    if (v >= 100000)   return (v / 100000).toFixed(1) + ' Lac';
+    return v.toLocaleString();
+  }
+
+  if (window.Chart) {
+    Chart.defaults.font.family = "'Outfit', sans-serif";
+    Chart.defaults.color = '#8b90a3';
+
+    new Chart(document.getElementById('mainChart'), {
+      data: {
+        labels: labels,
+        datasets: [
+          { type: 'bar',  label: 'Deals', data: dealsArr, backgroundColor: '#c9a84c', borderRadius: 6, barThickness: 16, yAxisID: 'y' },
+          { type: 'line', label: 'Revenue', data: revArr, borderColor: '#5db7ff', backgroundColor: 'rgba(93,183,255,.15)',
+            tension: .4, fill: true, pointRadius: 3, pointBackgroundColor: '#5db7ff', yAxisID: 'y1' }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: function (c) {
+            return c.dataset.label + ': ' + (c.dataset.yAxisID === 'y1' ? 'PKR ' + pkrShort(c.parsed.y) : c.parsed.y);
+          } } }
+        },
+        scales: {
+          x:  { grid: { display: false } },
+          y:  { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#eef0f7' } },
+          y1: { beginAtZero: true, position: 'right', grid: { display: false }, ticks: { callback: pkrShort } }
+        }
+      }
+    });
+
+    var total = typeData.reduce(function (a, b) { return a + b; }, 0);
+    new Chart(document.getElementById('typeChart'), {
+      type: 'doughnut',
+      data: {
+        labels: total ? typeLbl : ['No data'],
+        datasets: [{ data: total ? typeData : [1], backgroundColor: total ? palette : ['#d8e3e9'], borderWidth: 0, hoverOffset: 6 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { display: false } } }
+    });
+  }
+</script>
+{% endblock %}
