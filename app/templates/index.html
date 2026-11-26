@@ -148,7 +148,7 @@
       <div class="prop-card">
         <div class="prop-img-wrap">
           {% if prop.images %}
-            <img src="{{ url_for('static', filename='images/uploads/' + prop.images[0].image_url) }}" alt="{{ prop.title }}" loading="lazy">
+            <img src="{{ image_src(prop.images[0].image_url) }}" alt="{{ prop.title }}" loading="lazy">
           {% else %}
             <div class="prop-img-placeholder" style="background:linear-gradient(135deg,#1a1a2e,#b8912e);"></div>
           {% endif %}
@@ -215,7 +215,7 @@
       <div class="prop-card">
         <div class="prop-img-wrap">
           {% if prop.images %}
-            <img src="{{ url_for('static', filename='images/uploads/' + prop.images[0].image_url) }}" alt="{{ prop.title }}" loading="lazy">
+            <img src="{{ image_src(prop.images[0].image_url) }}" alt="{{ prop.title }}" loading="lazy">
           {% else %}
             <div class="prop-img-placeholder" style="background:linear-gradient(135deg,#0d1b2a,#b8912e);display:flex;align-items:center;justify-content:center;height:100%;"><i class="fa-solid fa-building" style="font-size:3rem;color:rgba(255,255,255,0.3)"></i></div>
           {% endif %}
@@ -356,7 +356,7 @@
       {% for post in latest_blogs %}
       <div class="blog-card">
         {% if post.cover_image %}
-          <div class="blog-img-wrap"><img src="{{ url_for('static', filename='images/uploads/' + post.cover_image) }}" alt="{{ post.title }}" loading="lazy"></div>
+          <div class="blog-img-wrap"><img src="{{ image_src(post.cover_image) }}" alt="{{ post.title }}" loading="lazy"></div>
         {% else %}
           <div class="blog-img-placeholder" style="background:linear-gradient(135deg,#1a1a2e,#b8912e);"></div>
         {% endif %}
