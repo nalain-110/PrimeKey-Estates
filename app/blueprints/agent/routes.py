@@ -13,12 +13,9 @@ from app.utils.cloud_images import delete_image as delete_cloud_image, is_allowe
 
 
 def save_image(file):
-    """Save a legacy blog cover locally and return its filename."""
-    ext = file.filename.rsplit('.', 1)[1].lower()
-    filename = f"{uuid.uuid4().hex}.{ext}"
-    path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-    file.save(path)
-    return filename
+    """Upload a blog cover to Cloudinary, using its local fallback if needed."""
+    return upload_image(file, folder='primekey/blog-covers')
+
 
 from app.models import (User, Agent, Property, PropertyImage, PropertyType,
                          City, Area, Location, SiteVisit, Deal, TokenReceipt,
@@ -30,7 +27,6 @@ from app.forms.deal_forms import (TokenReceiptForm, InstallmentPlanForm,
 from app.forms.blog_forms import BlogForm
 
 agent_bp = Blueprint('agent', __name__, template_folder='../../templates/agent')
-
 
 
 def last_n_months(n):
@@ -292,7 +288,7 @@ def delete_image(img_id):
     return redirect(url_for('agent.edit_listing', prop_id=prop.id))
 
 
-# ── Site Visits ───────────────────────────────────────────
+# ── Site Visits ─────────────────────────────────────────────
 @agent_bp.route('/visits')
 @agent_required
 def visits():
@@ -367,7 +363,7 @@ def update_offer(offer_id):
     return redirect(url_for('agent.offers'))
 
 
-# ── Deals ─────────────────────────────────────────────────
+# ── Deals ────────────────────────────────────────────────
 @agent_bp.route('/deals')
 @agent_required
 def deals():
@@ -403,10 +399,10 @@ def create_deal(prop_id):
         flash('Deal created successfully!', 'success')
         return redirect(url_for('agent.deals'))
     form.deal_price.data = prop.price
-    return render_template('agent/create_deal.html', form=form, prop=prop, agent=agent)
+    return render_template('agent/create_deal.html', form=form, prop=prop)
 
 
-# ── Token Receipts ────────────────────────────────────────
+# ── Token Receipts ───────────────────────────────────────
 @agent_bp.route('/receipts')
 @agent_required
 def receipts():
@@ -516,6 +512,9 @@ def add_blog():
         cover = None
         if form.cover_image.data and form.cover_image.data.filename:
             cover = save_image(form.cover_image.data)
+            if not cover:
+                flash('Blog cover upload failed. Check Cloudinary settings and try again.', 'danger')
+                return render_template('agent/add_blog.html', form=form)
         blog = Blog(
             title       = form.title.data,
             slug        = slug,
