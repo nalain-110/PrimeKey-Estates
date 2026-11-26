@@ -54,7 +54,7 @@
       {% for listing in recent_listings %}
       <a class="agent-property-card" data-search="{{ (listing.title ~ ' ' ~ (listing.location.address if listing.location else '') ~ ' ' ~ listing.listing_type)|lower }}" href="{{ url_for('agent.edit_listing', prop_id=listing.id) }}">
         <div class="agent-property-image">
-          {% if listing.images %}<img src="{{ url_for('static', filename='images/uploads/' + listing.images[0].image_url) }}" alt="{{ listing.title }}" loading="lazy">{% else %}<div class="agent-image-placeholder"><i class="fa-solid fa-house"></i><span>PrimeKey Estates</span></div>{% endif %}
+          {% if listing.images %}<img src="{{ image_src(listing.images[0].image_url) }}" alt="{{ listing.title }}" loading="lazy">{% else %}<div class="agent-image-placeholder"><i class="fa-solid fa-house"></i><span>PrimeKey Estates</span></div>{% endif %}
           <span class="agent-property-status {{ 'available' if listing.status == 'Available' else 'closed' }}">{{ listing.status }}</span>
           <span class="agent-property-type">{{ listing.listing_type }}</span>
         </div>
