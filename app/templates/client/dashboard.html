@@ -33,7 +33,7 @@
     <div class="client-table-wrap"><table class="client-table"><thead><tr><th>Property</th><th>Date</th><th>Status</th><th>Amount</th></tr></thead><tbody>
       {% for deal in recent_deals %}
       <tr>
-        <td><a class="client-booking-property" href="{{ url_for('client.deal_detail', deal_id=deal.id) }}"><span class="client-booking-thumb">{% if deal.property and deal.property.images %}<img src="{{ url_for('static', filename='images/uploads/' + deal.property.images[0].image_url) }}" alt="">{% else %}<i class="fa-solid fa-house"></i>{% endif %}</span><span><strong>{{ deal.property.title if deal.property else 'Booking #' ~ deal.id }}</strong><small>{{ deal.deal_type or 'Property' }}</small></span></a></td>
+        <td><a class="client-booking-property" href="{{ url_for('client.deal_detail', deal_id=deal.id) }}"><span class="client-booking-thumb">{% if deal.property and deal.property.images %}<img src="{{ image_src(deal.property.images[0].image_url) }}" alt="">{% else %}<i class="fa-solid fa-house"></i>{% endif %}</span><span><strong>{{ deal.property.title if deal.property else 'Booking #' ~ deal.id }}</strong><small>{{ deal.deal_type or 'Property' }}</small></span></a></td>
         <td>{{ deal.deal_date.strftime('%d %b %Y') if deal.deal_date else '—' }}</td>
         <td><span class="client-status-pill {{ 'complete' if deal.status == 'Completed' else 'cancelled' if deal.status == 'Cancelled' else 'pending' }}"><i></i>{{ deal.status }}</span></td>
         <td class="client-amount">PKR {{ '{:,.0f}'.format(deal.deal_price or 0) }}</td>
@@ -70,7 +70,7 @@
       {% for favorite in saved_properties %}{% set prop = favorite.property %}
       {% if prop %}
       <a class="client-property-card" href="{{ url_for('public.property_detail', prop_id=prop.id) }}">
-        <div class="client-property-image">{% if prop.images %}<img src="{{ url_for('static', filename='images/uploads/' + prop.images[0].image_url) }}" alt="{{ prop.title }}" loading="lazy">{% else %}<div class="client-property-placeholder"><i class="fa-solid fa-house"></i></div>{% endif %}<span>{{ prop.listing_type or 'Sale' }}</span></div>
+        <div class="client-property-image">{% if prop.images %}<img src="{{ image_src(prop.images[0].image_url) }}" alt="{{ prop.title }}" loading="lazy">{% else %}<div class="client-property-placeholder"><i class="fa-solid fa-house"></i></div>{% endif %}<span>{{ prop.listing_type or 'Sale' }}</span></div>
         <div class="client-property-info"><div class="client-property-price">{% if (prop.listing_type or '')|lower == 'rent' %}PKR {{ '{:,.0f}'.format(prop.price or 0) }} <small>/ month</small>{% elif prop.price >= 10000000 %}PKR {{ '%.2f'|format(prop.price/10000000) }} Cr{% elif prop.price >= 100000 %}PKR {{ '%.2f'|format(prop.price/100000) }} Lac{% else %}PKR {{ '{:,.0f}'.format(prop.price or 0) }}{% endif %}</div><h3>{{ prop.title }}</h3><p><i class="fa-solid fa-location-dot"></i> {{ prop.location.address if prop.location and prop.location.address else 'Pakistan' }}</p><div class="client-property-meta"><span><i class="fa-solid fa-bed"></i> {{ prop.bedrooms or 0 }} beds</span><span><i class="fa-solid fa-ruler-combined"></i> {{ prop.size or '—' }} {{ prop.size_unit or '' }}</span></div></div>
       </a>
       {% endif %}{% endfor %}
