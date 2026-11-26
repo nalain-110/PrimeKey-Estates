@@ -19,7 +19,16 @@
 <!-- ── Navbar ──────────────────────────────────────────────── -->
 <nav class="navbar" id="navbar">
   <a href="{{ url_for('public.index') }}" class="navbar-brand">
-    <div class="logo-icon">🏠</div>
+    <div class="logo-icon" aria-hidden="true">
+      <svg width="25" height="25" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6.5 21.5 24 7l17.5 14.5" stroke="#171923" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M12 19v22h24V19" fill="#F4E4B5" stroke="#171923" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M19.5 41V29.5a4.5 4.5 0 0 1 9 0V41" fill="#B8912E" stroke="#171923" stroke-width="2.5"/>
+        <path d="M16.5 24h5v5h-5zM26.5 24h5v5h-5z" fill="#171923"/>
+        <circle cx="24" cy="30" r="1.4" fill="#F4E4B5"/>
+        <path d="M24 31.5v2.2" stroke="#F4E4B5" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+    </div>
     Prime<span>Key</span>
   </a>
 
