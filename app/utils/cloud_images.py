@@ -92,8 +92,10 @@ def image_src(value, default=None):
     """Return remote URLs as-is and serve legacy local filenames from static uploads."""
     if not value:
         return default
-    value = str(value)
+
+    value = str(value).strip().lstrip('/')
     if value.startswith(('http://', 'https://')):
         return value
+
     from flask import url_for
-    return url_for('static', filename='images/uploads/' + value.lstrip('/'))
+    return url_for('static', filename='images/uploads/' + value)
