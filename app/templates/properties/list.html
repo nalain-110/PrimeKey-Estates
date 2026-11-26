@@ -117,7 +117,7 @@
         <div class="prop-card animate-fade-up">
           <div class="prop-img-wrap">
             {% if prop.images %}
-              <img src="{{ url_for('static', filename='images/uploads/' + prop.images[0].image_url) }}" alt="{{ prop.title }}" loading="lazy">
+              <img src="{{ image_src(prop.images[0].image_url) }}" alt="{{ prop.title }}" loading="lazy">
             {% else %}
               <div class="prop-img-placeholder" style="background:linear-gradient(135deg,#0d1b2a,#b8912e);display:flex;align-items:center;justify-content:center;height:100%;"><i class="fa-solid fa-building" style="font-size:3rem;color:rgba(255,255,255,0.3)"></i></div>
             {% endif %}
