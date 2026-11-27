@@ -135,7 +135,7 @@
         <div class="prop-card">
           <div class="prop-img-wrap">
             {% if prop.images %}
-            <img src="{{ url_for('static', filename='images/uploads/' + prop.images[0].image_url) }}" alt="{{ prop.title }}">
+            <img src="{{ image_src(prop.images[0].image_url) }}" alt="{{ prop.title }}">
             {% else %}
             <div class="prop-img-placeholder" style="background:linear-gradient(135deg,#0d1b2a,#b8912e);height:100%;display:flex;align-items:center;justify-content:center;">
               <i class="fa-solid fa-building" style="font-size:2.5rem;color:rgba(201,168,76,0.4);"></i>
