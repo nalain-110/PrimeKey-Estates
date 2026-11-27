@@ -26,7 +26,7 @@
       <div class="prop-gallery">
         {% if prop.images %}
           <div class="gallery-main">
-            <img src="{{ url_for('static', filename='images/uploads/' + prop.images[0].image_url) }}" alt="{{ prop.title }}" id="mainGalleryImg">
+            <img src="{{ image_src(prop.images[0].image_url) }}" alt="{{ prop.title }}" id="mainGalleryImg">
             <div class="gallery-badges">
               {% if prop.is_featured %}<span class="badge badge-gold">⭐ Featured</span>{% endif %}
               {% if prop.is_verified %}<span class="badge badge-success"><i class="fa-solid fa-shield-halved"></i> Verified</span>{% endif %}
@@ -36,8 +36,8 @@
           <div class="gallery-thumbs">
             {% for img in prop.images[1:5] %}
             <div class="gallery-thumb {% if loop.last and prop.images|length > 5 %}gallery-thumb-more{% endif %}"
-                 onclick="document.getElementById('mainGalleryImg').src='{{ url_for('static', filename='images/uploads/' + img.image_url) }}'">
-              <img src="{{ url_for('static', filename='images/uploads/' + img.image_url) }}" alt="Photo {{ loop.index + 1 }}">
+                 onclick="document.getElementById('mainGalleryImg').src='{{ image_src(img.image_url) }}'">
+              <img src="{{ image_src(img.image_url) }}" alt="Photo {{ loop.index + 1 }}">
               {% if loop.last and prop.images|length > 5 %}
                 <div class="gallery-more">+{{ prop.images|length - 5 }} more</div>
               {% endif %}
@@ -181,7 +181,7 @@
           <div class="prop-card">
             <div class="prop-img-wrap" style="height:160px;">
               {% if r.images %}
-                <img src="{{ url_for('static', filename='images/uploads/' + r.images[0].image_url) }}" alt="{{ r.title }}" loading="lazy">
+                <img src="{{ image_src(r.images[0].image_url) }}" alt="{{ r.title }}" loading="lazy">
               {% else %}
                 <div style="height:100%;background:linear-gradient(135deg,#0d1b2a,#b8912e);"></div>
               {% endif %}
